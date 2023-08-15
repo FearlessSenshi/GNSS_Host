@@ -17,7 +17,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-// Git comment
+// Git connected
 public class Functions implements Runnable, KeyListener{
 	MainApp gui;
 	Thread t1;
