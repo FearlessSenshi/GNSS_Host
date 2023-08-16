@@ -131,6 +131,7 @@ public class Functions implements Runnable, KeyListener{
 								} else {
 									// Decrease attempt by -1
 									System.out.println("Incorrect Passcode! ");
+									pw.println("incorrectPasscode");
 									attempts--;
 									System.out.println(attempts);
 
