@@ -83,6 +83,19 @@ public class Functions implements Runnable, KeyListener{
 				}
 			}
 		});
+		
+		gui.cancelHostConnection.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					cancelHostConnection();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			
+		});
 	}
 	
 	public static void main(String[] args) {
@@ -96,19 +109,20 @@ public class Functions implements Runnable, KeyListener{
 			try {
 				if(!clientVerified) {
 					// Host established connection to client
+					attempts = 3;
 					clientVerified = false;
 					serverPort = generatePort();
-					ss = new ServerSocket(serverPort);
-					System.out.println("Waiting for client connection...");
-					gui.clientConnectStatus.setText("Status: Waiting for client connection...");
-			        cs = ss.accept();
-			        if(cs.isConnected()) {
-			        	is = cs.getInputStream();
-			    		br = new BufferedReader(new InputStreamReader(is));
-			    		out = cs.getOutputStream();
-			    		pw = new PrintWriter(out,true);
-			        }
 			        while(true) {
+						ss = new ServerSocket(serverPort);
+						System.out.println("Waiting for client connection...");
+						gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+				        cs = ss.accept();
+				        if(cs.isConnected()) {
+				        	is = cs.getInputStream();
+				    		br = new BufferedReader(new InputStreamReader(is));
+				    		out = cs.getOutputStream();
+				    		pw = new PrintWriter(out,true);
+				        }
 			        	// Get Passcode
 			    		String output = "";
 			    		String senderAddress;
@@ -131,12 +145,22 @@ public class Functions implements Runnable, KeyListener{
 								} else {
 									// Decrease attempt by -1
 									System.out.println("Incorrect Passcode! ");
-									pw.println("incorrectPasscode");
-									attempts--;
-									System.out.println(attempts);
-
-									// If attempt ran out to 0, disconnect connecting client
-									if (attempts <= 0) {
+									if(attempts > 0) {
+										// Sends out an input saying that the given passcode was incorrect
+										pw.println("incorrectPasscode");
+										if(cs.isConnected()) System.out.println("Client is still connected.");
+										attempts--;
+										cs.close();
+										ss.close();
+										is.close();
+										out.close();
+										pw.close();
+										br.close();
+										System.out.println(attempts);
+									}
+									else {
+										// If attempt ran out to 0, disconnect connecting client
+										pw.println("accessDenied");
 										cs.close();
 										ss.close();
 										is.close();
@@ -330,6 +354,12 @@ public class Functions implements Runnable, KeyListener{
 		out.close();
 		br.close();
 		pw.close();
+		gui.cardLayout.show(gui.container, "hostPanel");
+	}
+	
+	private void cancelHostConnection() throws IOException {
+		System.out.println("[!] Disconnecting!");
+		ss.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 

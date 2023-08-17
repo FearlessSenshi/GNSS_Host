@@ -41,6 +41,7 @@ public class MainApp extends JFrame {
 	public JLabel hostIPLabel;
 	public JLabel clientConnectStatus;
 	public JLabel generatedPasscode;
+	public JButton cancelHostConnection;
 	
 	public JPanel connectStatusPanel;
 	public JLabel hostIPHostName;
@@ -107,6 +108,7 @@ public class MainApp extends JFrame {
 		createHostPanel.add(createBtn);
 
 		authPanel = new JPanel();
+		authPanel.setFocusable(false);
 		authPanel.setBackground(new Color(128, 255, 255));
 		container.add(authPanel, "authPanel");
 		authPanel.setLayout(null);
@@ -114,49 +116,56 @@ public class MainApp extends JFrame {
 		titleLabel_1 = new JLabel("GeoNetwork Security System (Host)");
 		titleLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		titleLabel_1.setFont(new Font("Tahoma", Font.BOLD, 30));
-		titleLabel_1.setBounds(10, 122, 564, 37);
+		titleLabel_1.setBounds(10, 80, 564, 37);
 		authPanel.add(titleLabel_1);
 
 		JLabel lblHostConnectionCreated = new JLabel("Host Connection Created.");
 		lblHostConnectionCreated.setHorizontalAlignment(SwingConstants.CENTER);
 		lblHostConnectionCreated.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblHostConnectionCreated.setBounds(10, 170, 564, 37);
+		lblHostConnectionCreated.setBounds(10, 128, 564, 37);
 		authPanel.add(lblHostConnectionCreated);
 
 		hostIPLabel = new JLabel("Encode (IP Address + Host Name) in this label.");
 		hostIPLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		hostIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostIPLabel.setBounds(10, 196, 564, 37);
+		hostIPLabel.setBounds(10, 154, 564, 37);
 		authPanel.add(hostIPLabel);
 
 		clientConnectStatus = new JLabel("Status: Encode status here...");
 		clientConnectStatus.setHorizontalAlignment(SwingConstants.CENTER);
 		clientConnectStatus.setFont(new Font("Tahoma", Font.BOLD, 20));
-		clientConnectStatus.setBounds(10, 279, 564, 37);
+		clientConnectStatus.setBounds(10, 218, 564, 37);
 		authPanel.add(clientConnectStatus);
 
 		JLabel lblInYourClient = new JLabel("In your client app,");
 		lblInYourClient.setHorizontalAlignment(SwingConstants.CENTER);
 		lblInYourClient.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblInYourClient.setBounds(10, 395, 564, 26);
+		lblInYourClient.setBounds(10, 301, 564, 26);
 		authPanel.add(lblInYourClient);
 
 		JLabel lblPleaseTypeThe = new JLabel("please type the passcode to verify connection to this PC");
 		lblPleaseTypeThe.setHorizontalAlignment(SwingConstants.CENTER);
 		lblPleaseTypeThe.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		lblPleaseTypeThe.setBounds(10, 418, 564, 26);
+		lblPleaseTypeThe.setBounds(10, 324, 564, 26);
 		authPanel.add(lblPleaseTypeThe);
 
 		JLabel lblPasscode = new JLabel("Passcode: ");
 		lblPasscode.setHorizontalAlignment(SwingConstants.CENTER);
 		lblPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPasscode.setBounds(180, 443, 138, 37);
+		lblPasscode.setBounds(180, 349, 138, 37);
 		authPanel.add(lblPasscode);
 
 		generatedPasscode = new JLabel("Encode passcode here");
 		generatedPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		generatedPasscode.setBounds(302, 443, 241, 37);
+		generatedPasscode.setBounds(302, 349, 241, 37);
 		authPanel.add(generatedPasscode);
+		
+		cancelHostConnection = new JButton("CANCEL");
+		cancelHostConnection.setBackground(new Color(255, 128, 128));
+		cancelHostConnection.setBorderPainted(false);
+		cancelHostConnection.setFont(new Font("Tahoma", Font.BOLD, 25));
+		cancelHostConnection.setBounds(201, 412, 167, 53);
+		authPanel.add(cancelHostConnection);
 
 		connectStatusPanel = new JPanel();
 		connectStatusPanel.setBackground(new Color(255, 255, 128));
