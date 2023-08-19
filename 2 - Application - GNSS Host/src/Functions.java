@@ -44,6 +44,7 @@ public class Functions implements Runnable, KeyListener{
 	public boolean unlocked = true;
 	public boolean autoControl = false;
 	public boolean stopNetChk = false;
+	public boolean authFailed = false;
 	
 	// Client Variables
 	public String clientIP;
@@ -114,16 +115,16 @@ public class Functions implements Runnable, KeyListener{
 	
 	@Override
 	public void run() {
-		while(true) {
+		while(!authFailed) {
 			try {
 				if(!clientVerified) {
 					// Host established connection to client
 					attempts = 3;
 					clientVerified = false;
 					serverPort = generatePort();
+					checkNetworkConnection();
 			        while(true) {
 						ss = new ServerSocket(serverPort);
-						checkNetworkConnection();
 						System.out.println("Waiting for client connection...");
 						gui.clientConnectStatus.setText("Status: Waiting for client connection...");
 				        cs = ss.accept();
@@ -151,6 +152,7 @@ public class Functions implements Runnable, KeyListener{
 									gui.hostIPHostName.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
 									pw.println("gnssVerified" + hostPasscode);
 									clientVerified = true;
+									t4.interrupt();
 									runInputListener(br);
 									break;
 								} else {
@@ -178,7 +180,9 @@ public class Functions implements Runnable, KeyListener{
 										out.close();
 										pw.close();
 										br.close();
+										t4.interrupt();
 										gui.cardLayout.show(gui.container, "hostPanel");
+										authFailed = true;
 										break;
 									}
 								}
@@ -197,6 +201,7 @@ public class Functions implements Runnable, KeyListener{
 							out.close();
 							br.close();
 							pw.close();
+							t4.interrupt();
 							break;
 						}
 			        }
@@ -204,6 +209,7 @@ public class Functions implements Runnable, KeyListener{
 				
 			} catch(Exception e) {
 				e.printStackTrace();
+				t4.interrupt();
 				break;
 			}
 		}
@@ -214,6 +220,7 @@ public class Functions implements Runnable, KeyListener{
 		hostIP = inetAddress.getLocalHost().getHostAddress();
 		hostName = inetAddress.getLocalHost().getHostName();
 		gui.clientConnectStatus.setText("Status: Waiting client connection...");
+		authFailed = false;
 		t1 = new Thread(this);
 		t1.start();
 	}
@@ -239,22 +246,6 @@ public class Functions implements Runnable, KeyListener{
 	private int generatePasscode() {
 		hostPasscode = (int)(Math.random()*(100000-10000))+10000;
 		return hostPasscode;
-	}
-	
-	private boolean waitForPasscode(String output) {
-		if (output.equals("verifyConnection" + hostPasscode)) {
-			clientVerified = true;
-			gui.cardLayout.show(gui.container, "connectStatusPanel");
-			gui.hostIPHostName.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
-			System.out.println("Client connection verified!");
-			return true;
-		} 
-		else {
-			System.out.println("Incorrect Passcode! ");
-			attempts--;
-			System.out.println(attempts);
-			return false;
-		}
 	}
 	
 	public void runInputListener(BufferedReader br) {
