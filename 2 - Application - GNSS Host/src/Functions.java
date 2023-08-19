@@ -12,17 +12,24 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Scanner;
+
+import javax.swing.JOptionPane;
 
 public class Functions implements Runnable, KeyListener{
 	MainApp gui;
 	Thread t1;
 	Thread t2;
 	Thread t3;
+	Thread t4;
 	
 	// Host Variables
 	public ServerSocket ss;
@@ -36,6 +43,7 @@ public class Functions implements Runnable, KeyListener{
 	public final int MAX_PORT_RANGE = 65536;
 	public boolean unlocked = true;
 	public boolean autoControl = false;
+	public boolean stopNetChk = false;
 	
 	// Client Variables
 	public String clientIP;
@@ -59,6 +67,7 @@ public class Functions implements Runnable, KeyListener{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					createHost();
+					
 				} catch (UnknownHostException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -114,6 +123,7 @@ public class Functions implements Runnable, KeyListener{
 					serverPort = generatePort();
 			        while(true) {
 						ss = new ServerSocket(serverPort);
+						checkNetworkConnection();
 						System.out.println("Waiting for client connection...");
 						gui.clientConnectStatus.setText("Status: Waiting for client connection...");
 				        cs = ss.accept();
@@ -122,6 +132,7 @@ public class Functions implements Runnable, KeyListener{
 				    		br = new BufferedReader(new InputStreamReader(is));
 				    		out = cs.getOutputStream();
 				    		pw = new PrintWriter(out,true);
+				    		
 				        }
 			        	// Get Passcode
 			    		String output = "";
@@ -167,6 +178,7 @@ public class Functions implements Runnable, KeyListener{
 										out.close();
 										pw.close();
 										br.close();
+										gui.cardLayout.show(gui.container, "hostPanel");
 										break;
 									}
 								}
@@ -290,6 +302,45 @@ public class Functions implements Runnable, KeyListener{
 		t3.start();
 	}
 	
+	public void checkNetworkConnection() {
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						InetAddress ia = InetAddress.getByName("www.google.com");
+						if(!ia.isReachable(1000)){
+							System.out.println("Unreachable");
+							gui.clientConnectStatus.setText("Status: Network lost. Retrying connection...");
+						}
+						else {
+							System.out.println("Connected");
+							gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+						}
+						Thread.sleep(1000);
+					} catch(IOException e) {
+						System.out.println("No internet connection." + e);
+						gui.cardLayout.show(gui.container, "hostPanel");
+						JOptionPane.showMessageDialog(null, "Network Error", "No internet connection",JOptionPane.WARNING_MESSAGE);
+						try {
+							cancelHostConnection();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						break;
+					} catch (InterruptedException e1) {
+						System.out.println("Thread killed or program stopped.");
+						break;
+					}
+				}
+			}
+		};
+		
+		t4 = new Thread(runnable);
+		t4.start();
+	}
+	
 	public void command(String cmd) throws IOException {
 		if(clientVerified) {
 			switch(cmd) {
@@ -360,6 +411,7 @@ public class Functions implements Runnable, KeyListener{
 	private void cancelHostConnection() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		ss.close();
+		t4.interrupt();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 
@@ -380,7 +432,4 @@ public class Functions implements Runnable, KeyListener{
 		// TODO Auto-generated method stub
 		
 	}
-	
-	
-	
 }
