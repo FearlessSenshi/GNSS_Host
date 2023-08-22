@@ -325,6 +325,7 @@ public class Functions implements Runnable, KeyListener{
 	private void lockPC() {
 		System.out.println("[!] Locking PC!");
 		gui.securityStatusLabel.setText("Security Status: Locked");
+		gui.w.addKeyListener(this);
 		// Locks pc (shows whitescreen that cannot be exited or moved, some hotkeys are disabled)
 		gui.w.setVisible(true);
 		// gui.w.setAlwaysOnTop(true); DO NOT UNCOMMENT, UNLESS A FUNCTION IS CREATED TO DESTROY THE APP
@@ -362,22 +363,21 @@ public class Functions implements Runnable, KeyListener{
 		ss.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
+	
+
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 	
