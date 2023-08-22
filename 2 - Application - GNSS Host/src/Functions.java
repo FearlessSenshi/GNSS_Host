@@ -298,6 +298,7 @@ public class Functions implements Runnable, KeyListener{
 	}
 	
 	public void checkNetworkConnection() {
+		System.out.println("Hi didn't see ya there.");
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
