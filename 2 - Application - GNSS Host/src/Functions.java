@@ -152,6 +152,10 @@ public class Functions implements Runnable, KeyListener{
 									gui.hostIPHostName.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
 									pw.println("gnssVerified" + hostPasscode);
 									clientVerified = true;
+
+									InetAddress ia = cs.getInetAddress();
+									System.out.println("Client Local IP Address: " + ia.getHostAddress());
+									
 									t4.interrupt();
 									runInputListener(br);
 									break;
