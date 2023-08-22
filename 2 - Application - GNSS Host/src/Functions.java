@@ -12,17 +12,24 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Scanner;
+
+import javax.swing.JOptionPane;
 
 public class Functions implements Runnable, KeyListener{
 	MainApp gui;
 	Thread t1;
 	Thread t2;
 	Thread t3;
+	Thread t4;
 	
 	// Host Variables
 	public ServerSocket ss;
@@ -36,6 +43,8 @@ public class Functions implements Runnable, KeyListener{
 	public final int MAX_PORT_RANGE = 65536;
 	public boolean unlocked = true;
 	public boolean autoControl = false;
+	public boolean stopNetChk = false;
+	public boolean authFailed = false;
 	
 	// Client Variables
 	public String clientIP;
@@ -59,6 +68,7 @@ public class Functions implements Runnable, KeyListener{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					createHost();
+					
 				} catch (UnknownHostException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -105,13 +115,14 @@ public class Functions implements Runnable, KeyListener{
 	
 	@Override
 	public void run() {
-		while(true) {
+		while(!authFailed) {
 			try {
 				if(!clientVerified) {
 					// Host established connection to client
 					attempts = 3;
 					clientVerified = false;
 					serverPort = generatePort();
+					checkNetworkConnection();
 			        while(true) {
 						ss = new ServerSocket(serverPort);
 						System.out.println("Waiting for client connection...");
@@ -122,6 +133,7 @@ public class Functions implements Runnable, KeyListener{
 				    		br = new BufferedReader(new InputStreamReader(is));
 				    		out = cs.getOutputStream();
 				    		pw = new PrintWriter(out,true);
+				    		
 				        }
 			        	// Get Passcode
 			    		String output = "";
@@ -140,6 +152,11 @@ public class Functions implements Runnable, KeyListener{
 									gui.hostIPHostName.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
 									pw.println("gnssVerified" + hostPasscode);
 									clientVerified = true;
+
+									InetAddress ia = cs.getInetAddress();
+									System.out.println("Client Local IP Address: " + ia.getHostAddress());
+									
+									t4.interrupt();
 									runInputListener(br);
 									break;
 								} else {
@@ -167,6 +184,9 @@ public class Functions implements Runnable, KeyListener{
 										out.close();
 										pw.close();
 										br.close();
+										t4.interrupt();
+										gui.cardLayout.show(gui.container, "hostPanel");
+										authFailed = true;
 										break;
 									}
 								}
@@ -185,6 +205,7 @@ public class Functions implements Runnable, KeyListener{
 							out.close();
 							br.close();
 							pw.close();
+							t4.interrupt();
 							break;
 						}
 			        }
@@ -192,6 +213,7 @@ public class Functions implements Runnable, KeyListener{
 				
 			} catch(Exception e) {
 				e.printStackTrace();
+				t4.interrupt();
 				break;
 			}
 		}
@@ -202,6 +224,7 @@ public class Functions implements Runnable, KeyListener{
 		hostIP = inetAddress.getLocalHost().getHostAddress();
 		hostName = inetAddress.getLocalHost().getHostName();
 		gui.clientConnectStatus.setText("Status: Waiting client connection...");
+		authFailed = false;
 		t1 = new Thread(this);
 		t1.start();
 	}
@@ -227,22 +250,6 @@ public class Functions implements Runnable, KeyListener{
 	private int generatePasscode() {
 		hostPasscode = (int)(Math.random()*(100000-10000))+10000;
 		return hostPasscode;
-	}
-	
-	private boolean waitForPasscode(String output) {
-		if (output.equals("verifyConnection" + hostPasscode)) {
-			clientVerified = true;
-			gui.cardLayout.show(gui.container, "connectStatusPanel");
-			gui.hostIPHostName.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
-			System.out.println("Client connection verified!");
-			return true;
-		} 
-		else {
-			System.out.println("Incorrect Passcode! ");
-			attempts--;
-			System.out.println(attempts);
-			return false;
-		}
 	}
 	
 	public void runInputListener(BufferedReader br) {
@@ -288,6 +295,45 @@ public class Functions implements Runnable, KeyListener{
 		};
 		t3 = new Thread(runnable);
 		t3.start();
+	}
+	
+	public void checkNetworkConnection() {
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						InetAddress ia = InetAddress.getByName("www.google.com");
+						if(!ia.isReachable(1000)){
+							System.out.println("Unreachable");
+							gui.clientConnectStatus.setText("Status: Network lost. Retrying connection...");
+						}
+						else {
+							System.out.println("Connected");
+							gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+						}
+						Thread.sleep(1000);
+					} catch(IOException e) {
+						System.out.println("No internet connection." + e);
+						gui.cardLayout.show(gui.container, "hostPanel");
+						JOptionPane.showMessageDialog(null, "Network Error", "No internet connection",JOptionPane.WARNING_MESSAGE);
+						try {
+							cancelHostConnection();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						break;
+					} catch (InterruptedException e1) {
+						System.out.println("Thread killed or program stopped.");
+						break;
+					}
+				}
+			}
+		};
+		
+		t4 = new Thread(runnable);
+		t4.start();
 	}
 	
 	public void command(String cmd) throws IOException {
@@ -361,6 +407,7 @@ public class Functions implements Runnable, KeyListener{
 	private void cancelHostConnection() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		ss.close();
+		t4.interrupt();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
@@ -380,7 +427,4 @@ public class Functions implements Runnable, KeyListener{
 	public void keyReleased(KeyEvent e) {
 		
 	}
-	
-	
-	
 }
