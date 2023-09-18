@@ -408,7 +408,7 @@ public class Functions implements Runnable, KeyListener{
 	private void cancelHostConnection() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		ss.close();
-		//t4.interrupt();
+		////t4.interrupt();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
