@@ -1,4 +1,5 @@
 import java.awt.Dimension;
+import java.awt.RenderingHints.Key;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,7 +25,7 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
-public class Functions implements Runnable, KeyListener{
+public class Functions implements Runnable{
 	MainApp gui;
 	Thread t1;
 	Thread t2;
@@ -62,6 +63,47 @@ public class Functions implements Runnable, KeyListener{
 	
 	public Functions() {
 		gui = new MainApp();
+		
+		gui.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				System.out.println(e.getKeyChar() + " - " + e.getKeyCode());
+				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
+		            System.out.println("Ctrl+C pressed (Copy)");
+		        } 
+				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_X) {
+		            System.out.println("Ctrl+X pressed (Cut)");
+		        }
+				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
+		            System.out.println("Ctrl+V pressed (Paste)");
+		        }
+				if (e.isControlDown() && e.isAltDown()) {
+					System.out.println("Admin Functions");
+					e.consume();
+				}
+				if(e.getKeyCode() == KeyEvent.VK_WINDOWS) {
+					System.out.println("bruh");
+				}
+				if(e.getKeyCode() == KeyEvent.VK_DELETE) {
+					System.out.println("bruh2");
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		
 		gui.createBtn.addActionListener(new ActionListener() {
 			@Override
@@ -372,7 +414,6 @@ public class Functions implements Runnable, KeyListener{
 	private void lockPC() {
 		System.out.println("[!] Locking PC!");
 		gui.securityStatusLabel.setText("Security Status: Locked");
-		gui.w.addKeyListener(this);
 		// Locks pc (shows whitescreen that cannot be exited or moved, some hotkeys are disabled)
 		gui.w.setVisible(true);
 		// gui.w.setAlwaysOnTop(true); DO NOT UNCOMMENT, UNLESS A FUNCTION IS CREATED TO DESTROY THE APP
@@ -412,20 +453,15 @@ public class Functions implements Runnable, KeyListener{
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
-
-
-	@Override
-	public void keyTyped(KeyEvent e) {
-		
-	}
-
-	@Override
-	public void keyPressed(KeyEvent e) {
-		
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		
-	}
+	/*
+	 
+	 Prohibited Hotkeys in Lock Mode:
+	 
+	 Win + L = Windows Lock Screen
+	 Alt + F4 = Exit Application/Shutdown
+	 Ctrl + Shift + Esc = Open Task Manager
+	 Ctrl + Alt + Del = Open Admin Functions
+	 Win + R = Run command
+	 
+	*/
 }
