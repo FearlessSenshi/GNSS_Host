@@ -92,20 +92,39 @@ public class MainApp extends JFrame {
 		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 30));
 		createHostPanel.add(titleLabel);
 
-		dialog1 = new JLabel("Create Host Connection");
+		dialog1 = new JLabel("Connect via Wi-Fi");
 		dialog1.setHorizontalAlignment(SwingConstants.CENTER);
 		dialog1.setFont(new Font("Tahoma", Font.BOLD, 20));
-		dialog1.setBounds(10, 264, 564, 37);
+		dialog1.setBounds(48, 264, 208, 37);
 		createHostPanel.add(dialog1);
 
-		createBtn = new JButton("CREATE");
+		createBtn = new JButton("Wi-Fi");
+		createBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 		createBtn.setBorderPainted(false);
 		createBtn.setBackground(new Color(255, 128, 128));
 		createBtn.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
 		createBtn.setFont(new Font("Tahoma", Font.BOLD, 25));
 		createBtn.setFocusable(false);
-		createBtn.setBounds(199, 312, 167, 53);
+		createBtn.setBounds(69, 312, 167, 53);
 		createHostPanel.add(createBtn);
+		
+		JLabel lblConnectViaHotspot = new JLabel("Connect via Hotspot");
+		lblConnectViaHotspot.setHorizontalAlignment(SwingConstants.CENTER);
+		lblConnectViaHotspot.setFont(new Font("Tahoma", Font.BOLD, 20));
+		lblConnectViaHotspot.setBounds(313, 264, 220, 37);
+		createHostPanel.add(lblConnectViaHotspot);
+		
+		JButton createBtn2 = new JButton("Hotspot");
+		createBtn2.setFont(new Font("Tahoma", Font.BOLD, 25));
+		createBtn2.setFocusable(false);
+		createBtn2.setBorderPainted(false);
+		createBtn2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		createBtn2.setBackground(new Color(128, 128, 255));
+		createBtn2.setBounds(333, 312, 167, 53);
+		createHostPanel.add(createBtn2);
 
 		authPanel = new JPanel();
 		authPanel.setFocusable(false);

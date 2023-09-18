@@ -122,7 +122,7 @@ public class Functions implements Runnable, KeyListener{
 					attempts = 3;
 					clientVerified = false;
 					serverPort = generatePort();
-					checkNetworkConnection();
+					// checkNetworkConnection();
 			        while(true) {
 						ss = new ServerSocket(serverPort);
 						System.out.println("Waiting for client connection...");
@@ -156,7 +156,7 @@ public class Functions implements Runnable, KeyListener{
 									InetAddress ia = cs.getInetAddress();
 									System.out.println("Client Local IP Address: " + ia.getHostAddress());
 									
-									t4.interrupt();
+									//t4.interrupt();
 									runInputListener(br);
 									break;
 								} else {
@@ -184,7 +184,7 @@ public class Functions implements Runnable, KeyListener{
 										out.close();
 										pw.close();
 										br.close();
-										t4.interrupt();
+										//t4.interrupt();
 										gui.cardLayout.show(gui.container, "hostPanel");
 										authFailed = true;
 										break;
@@ -205,7 +205,7 @@ public class Functions implements Runnable, KeyListener{
 							out.close();
 							br.close();
 							pw.close();
-							t4.interrupt();
+							//t4.interrupt();
 							break;
 						}
 			        }
@@ -213,7 +213,7 @@ public class Functions implements Runnable, KeyListener{
 				
 			} catch(Exception e) {
 				e.printStackTrace();
-				t4.interrupt();
+				//t4.interrupt();
 				break;
 			}
 		}
@@ -408,7 +408,7 @@ public class Functions implements Runnable, KeyListener{
 	private void cancelHostConnection() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		ss.close();
-		t4.interrupt();
+		//t4.interrupt();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
