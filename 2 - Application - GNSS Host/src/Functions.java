@@ -119,6 +119,21 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		gui.createBtn2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				connectToHost();
+			}
+		});
+		
+		gui.btnCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.cardLayout.show(gui.container, "hostPanel");
+			}
+			
+		});
+		
 		gui.dcButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -269,6 +284,10 @@ public class Functions implements Runnable{
 		authFailed = false;
 		t1 = new Thread(this);
 		t1.start();
+	}
+	
+	void connectToHost() {
+		gui.cardLayout.show(gui.container, "connectToHostPanel");
 	}
 	
 	void showAuthPanel() {

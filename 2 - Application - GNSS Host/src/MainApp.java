@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JTextField;
 
 public class MainApp extends JFrame {
 
@@ -42,6 +43,13 @@ public class MainApp extends JFrame {
 	public JLabel clientConnectStatus;
 	public JLabel generatedPasscode;
 	public JButton cancelHostConnection;
+	
+	public JPanel connectToHostPanel;
+	public JButton createBtn2;
+	public JTextField ipTextInput;
+	public JTextField portInput;
+	public JTextField passcodeInput;
+	public JButton btnCancel;
 	
 	public JPanel connectStatusPanel;
 	public JLabel hostIPHostName;
@@ -99,10 +107,6 @@ public class MainApp extends JFrame {
 		createHostPanel.add(dialog1);
 
 		createBtn = new JButton("Wi-Fi");
-		createBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
 		createBtn.setBorderPainted(false);
 		createBtn.setBackground(new Color(255, 128, 128));
 		createBtn.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
@@ -117,7 +121,7 @@ public class MainApp extends JFrame {
 		lblConnectViaHotspot.setBounds(313, 264, 220, 37);
 		createHostPanel.add(lblConnectViaHotspot);
 		
-		JButton createBtn2 = new JButton("Hotspot");
+		createBtn2 = new JButton("Hotspot");
 		createBtn2.setFont(new Font("Tahoma", Font.BOLD, 25));
 		createBtn2.setFocusable(false);
 		createBtn2.setBorderPainted(false);
@@ -229,6 +233,61 @@ public class MainApp extends JFrame {
 		controlModeLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
 		controlModeLabel.setBounds(10, 262, 564, 25);
 		connectStatusPanel.add(controlModeLabel);
+		
+		connectToHostPanel = new JPanel();
+		connectToHostPanel.setBackground(new Color(255, 0, 255));
+		container.add(connectToHostPanel, "connectToHostPanel");
+		connectToHostPanel.setLayout(null);
+		
+		JLabel inputIPLabel = new JLabel("IP");
+		inputIPLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
+		inputIPLabel.setBounds(131, 185, 128, 37);
+		connectToHostPanel.add(inputIPLabel);
+		
+		JLabel inputPortLabel = new JLabel("Port");
+		inputPortLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
+		inputPortLabel.setBounds(131, 233, 96, 25);
+		connectToHostPanel.add(inputPortLabel);
+		
+		JLabel inputPasscodeLabel = new JLabel("Passcode");
+		inputPasscodeLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
+		inputPasscodeLabel.setBounds(131, 269, 128, 37);
+		connectToHostPanel.add(inputPasscodeLabel);
+		
+		JLabel connectToHostTitle = new JLabel("Connect to Host");
+		connectToHostTitle.setFont(new Font("Tahoma", Font.BOLD, 27));
+		connectToHostTitle.setBounds(131, 93, 232, 37);
+		connectToHostPanel.add(connectToHostTitle);
+		
+		ipTextInput = new JTextField();
+		ipTextInput.setBounds(277, 197, 189, 20);
+		connectToHostPanel.add(ipTextInput);
+		ipTextInput.setColumns(10);
+		
+		portInput = new JTextField();
+		portInput.setColumns(10);
+		portInput.setBounds(277, 239, 189, 20);
+		connectToHostPanel.add(portInput);
+		
+		passcodeInput = new JTextField();
+		passcodeInput.setColumns(10);
+		passcodeInput.setBounds(277, 281, 189, 20);
+		connectToHostPanel.add(passcodeInput);
+		
+		JButton connectHostBtn = new JButton("CONNECT");
+		connectHostBtn.setBorderPainted(false);
+		connectHostBtn.setBackground(new Color(128, 128, 192));
+		connectHostBtn.setFont(new Font("Tahoma", Font.BOLD, 20));
+		connectHostBtn.setBounds(131, 346, 158, 57);
+		connectToHostPanel.add(connectHostBtn);
+		
+		btnCancel = new JButton("CANCEL");
+		btnCancel.setForeground(new Color(255, 255, 255));
+		btnCancel.setFont(new Font("Tahoma", Font.BOLD, 20));
+		btnCancel.setBorderPainted(false);
+		btnCancel.setBackground(new Color(255, 0, 0));
+		btnCancel.setBounds(308, 346, 158, 57);
+		connectToHostPanel.add(btnCancel);
 		
 		w = new JWindow();
 		w.getContentPane().setLayout(new BorderLayout());
