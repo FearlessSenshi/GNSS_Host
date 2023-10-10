@@ -25,6 +25,8 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
+// Committed by: LENOVO ;) 10-11-2023 @0131
+
 public class Functions implements Runnable{
 	MainApp gui;
 	Thread t1;
@@ -123,6 +125,17 @@ public class Functions implements Runnable{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				connectToHost();
+			}
+		});
+		
+		gui.connectHostBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String ip = gui.ipTextInput.getText();
+				int port = Integer.parseInt(gui.portInput.getText());
+				int passcode = Integer.parseInt(gui.passcodeInput.getText());
+				joinHost(ip, port, passcode);
 			}
 		});
 		
@@ -290,6 +303,17 @@ public class Functions implements Runnable{
 		gui.cardLayout.show(gui.container, "connectToHostPanel");
 	}
 	
+	void joinHost(String ip, int port, int passcode) {
+		try {
+			System.out.println("Connecting to hotspot...");
+			Socket s = new Socket(ip,port);
+			System.out.println("Connected!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	void showAuthPanel() {
 		gui.cardLayout.show(gui.container, "authPanel");
 		gui.clientConnectStatus.setText("Status: Waiting for client connection...");
@@ -314,7 +338,6 @@ public class Functions implements Runnable{
 	}
 	
 	public void runInputListener(BufferedReader br) {
-		
 		// InputStream
 		Runnable runnable = new Runnable() {
 			@Override
@@ -331,7 +354,6 @@ public class Functions implements Runnable{
 						try {
 							br.close();
 						} catch (IOException e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						e.printStackTrace();

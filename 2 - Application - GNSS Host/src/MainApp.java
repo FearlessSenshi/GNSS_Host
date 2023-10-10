@@ -49,6 +49,7 @@ public class MainApp extends JFrame {
 	public JTextField ipTextInput;
 	public JTextField portInput;
 	public JTextField passcodeInput;
+	public JButton connectHostBtn;
 	public JButton btnCancel;
 	
 	public JPanel connectStatusPanel;
@@ -274,7 +275,7 @@ public class MainApp extends JFrame {
 		passcodeInput.setBounds(277, 281, 189, 20);
 		connectToHostPanel.add(passcodeInput);
 		
-		JButton connectHostBtn = new JButton("CONNECT");
+		connectHostBtn = new JButton("CONNECT");
 		connectHostBtn.setBorderPainted(false);
 		connectHostBtn.setBackground(new Color(128, 128, 192));
 		connectHostBtn.setFont(new Font("Tahoma", Font.BOLD, 20));
