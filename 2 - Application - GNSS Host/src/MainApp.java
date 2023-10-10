@@ -214,8 +214,7 @@ public class MainApp extends JFrame {
 		w = new JWindow();
 		w.getContentPane().setLayout(new BorderLayout());
 		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
-		//w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
-		w.setSize(100,100);
+		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
 		w.setLocationRelativeTo(null);
 		
 		windowLockLabel = new JLabel("Your PC is locked.");

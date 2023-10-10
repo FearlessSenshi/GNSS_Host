@@ -64,7 +64,7 @@ public class Functions implements Runnable{
 	public Functions() {
 		gui = new MainApp();
 		
-		gui.addKeyListener(new KeyListener() {
+		gui.w.addKeyListener(new KeyListener() {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
@@ -76,25 +76,9 @@ public class Functions implements Runnable{
 			public void keyPressed(KeyEvent e) {
 				// TODO Auto-generated method stub
 				System.out.println(e.getKeyChar() + " - " + e.getKeyCode());
-				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
-		            System.out.println("Ctrl+C pressed (Copy)");
+				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_PLUS) {
+					
 		        } 
-				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_X) {
-		            System.out.println("Ctrl+X pressed (Cut)");
-		        }
-				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
-		            System.out.println("Ctrl+V pressed (Paste)");
-		        }
-				if (e.isControlDown() && e.isAltDown()) {
-					System.out.println("Admin Functions");
-					e.consume();
-				}
-				if(e.getKeyCode() == KeyEvent.VK_WINDOWS) {
-					System.out.println("bruh");
-				}
-				if(e.getKeyCode() == KeyEvent.VK_DELETE) {
-					System.out.println("bruh2");
-				}
 			}
 
 			@Override
@@ -262,7 +246,7 @@ public class Functions implements Runnable{
 	}
 	
 	void createHost() throws UnknownHostException {
-		InetAddress inetAddress = InetAddress.getByName("localhost");
+		InetAddress inetAddress = InetAddress.getLocalHost();
 		hostIP = inetAddress.getLocalHost().getHostAddress();
 		hostName = inetAddress.getLocalHost().getHostName();
 		gui.clientConnectStatus.setText("Status: Waiting client connection...");
