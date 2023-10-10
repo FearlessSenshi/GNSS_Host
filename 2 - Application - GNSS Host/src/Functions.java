@@ -25,6 +25,8 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
+// Committed by: LENOVO ;) 10-11-2023 @0131
+
 public class Functions implements Runnable{
 	MainApp gui;
 	Thread t1;
@@ -103,6 +105,32 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		gui.createBtn2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				connectToHost();
+			}
+		});
+		
+		gui.connectHostBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String ip = gui.ipTextInput.getText();
+				int port = Integer.parseInt(gui.portInput.getText());
+				int passcode = Integer.parseInt(gui.passcodeInput.getText());
+				joinHost(ip, port, passcode);
+			}
+		});
+		
+		gui.btnCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.cardLayout.show(gui.container, "hostPanel");
+			}
+			
+		});
+		
 		gui.dcButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -148,7 +176,7 @@ public class Functions implements Runnable{
 					attempts = 3;
 					clientVerified = false;
 					serverPort = generatePort();
-					checkNetworkConnection();
+					// checkNetworkConnection();
 			        while(true) {
 						ss = new ServerSocket(serverPort);
 						System.out.println("Waiting for client connection...");
@@ -182,7 +210,7 @@ public class Functions implements Runnable{
 									InetAddress ia = cs.getInetAddress();
 									System.out.println("Client Local IP Address: " + ia.getHostAddress());
 									
-									t4.interrupt();
+									//t4.interrupt();
 									runInputListener(br);
 									break;
 								} else {
@@ -210,7 +238,7 @@ public class Functions implements Runnable{
 										out.close();
 										pw.close();
 										br.close();
-										t4.interrupt();
+										//t4.interrupt();
 										gui.cardLayout.show(gui.container, "hostPanel");
 										authFailed = true;
 										break;
@@ -231,7 +259,7 @@ public class Functions implements Runnable{
 							out.close();
 							br.close();
 							pw.close();
-							t4.interrupt();
+							//t4.interrupt();
 							break;
 						}
 			        }
@@ -239,7 +267,7 @@ public class Functions implements Runnable{
 				
 			} catch(Exception e) {
 				e.printStackTrace();
-				t4.interrupt();
+				//t4.interrupt();
 				break;
 			}
 		}
@@ -253,6 +281,21 @@ public class Functions implements Runnable{
 		authFailed = false;
 		t1 = new Thread(this);
 		t1.start();
+	}
+	
+	void connectToHost() {
+		gui.cardLayout.show(gui.container, "connectToHostPanel");
+	}
+	
+	void joinHost(String ip, int port, int passcode) {
+		try {
+			System.out.println("Connecting to hotspot...");
+			Socket s = new Socket(ip,port);
+			System.out.println("Connected!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	void showAuthPanel() {
@@ -279,7 +322,6 @@ public class Functions implements Runnable{
 	}
 	
 	public void runInputListener(BufferedReader br) {
-		
 		// InputStream
 		Runnable runnable = new Runnable() {
 			@Override
@@ -296,7 +338,6 @@ public class Functions implements Runnable{
 						try {
 							br.close();
 						} catch (IOException e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						e.printStackTrace();
@@ -433,12 +474,12 @@ public class Functions implements Runnable{
 	private void cancelHostConnection() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		ss.close();
-		t4.interrupt();
+		//t4.interrupt();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
 	/*
-	 
+	 Hello po
 	 Prohibited Hotkeys in Lock Mode:
 	 
 	 Win + L = Windows Lock Screen
