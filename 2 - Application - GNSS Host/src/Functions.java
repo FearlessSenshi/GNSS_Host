@@ -25,14 +25,13 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
-// Committed by: SENSHI ;) 10-18-2023 @2115
+// Last committed by: 
+// 		Name: LENOVO ;)
+//		DT  : 10-18-2023 2143
 
 public class Functions implements Runnable{
 	MainApp gui;
-	Thread t1;
-	Thread t2;
-	Thread t3;
-	Thread t4;
+	Thread t1,t2,t3,t4,t5,t6;
 	
 	// Host Variables
 	public ServerSocket ss;
@@ -62,9 +61,6 @@ public class Functions implements Runnable{
 	// Send Input
 	private OutputStream out;
 	private PrintWriter pw;
-	
-	
-	
 	
 	// Constructor - Assigning buttons with functions
 	
@@ -310,7 +306,7 @@ public class Functions implements Runnable{
 		return hostPasscode;
 	}
 	
-	// Runs the InputListener
+	// Runs the InputListener (listens for incoming input)
 	public void runInputListener(BufferedReader br) {
 		// InputStream
 		Runnable runnable = new Runnable() {
@@ -341,6 +337,7 @@ public class Functions implements Runnable{
 		t2.start();
 	}
 	
+	// Runs output listener (sends an output to the client)
 	public void runOutputSender(PrintWriter pw, String message) {
 		Runnable runnable = new Runnable() {
 
@@ -354,6 +351,22 @@ public class Functions implements Runnable{
 		t3.start();
 	}
 	
+	// Runs device connection checker (detects session connectivity)
+	public void runDeviceConnChecker() {
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		};
+		t4 = new Thread(runnable);
+		t4.start();
+	}
+	
+	// (EXPERIMENTAL) Checks network connectivity
 	public void checkNetworkConnection() {
 		// Checks network connection if available or not.
 		Runnable runnable = new Runnable() {
@@ -390,8 +403,8 @@ public class Functions implements Runnable{
 			}
 		};
 		
-		t4 = new Thread(runnable);
-		t4.start();
+		t5 = new Thread(runnable);
+		t5.start();
 	}
 	
 	public void command(String cmd) throws IOException {
@@ -431,7 +444,17 @@ public class Functions implements Runnable{
 		System.out.println("[!] Locking PC!");
 		gui.securityStatusLabel.setText("Security Status: Locked");
 		gui.w.setVisible(true);
-		gui.w.setAlwaysOnTop(true); // DO NOT UNCOMMENT, UNLESS A FUNCTION IS CREATED TO DESTROY THE APP
+		gui.w.setAlwaysOnTop(false); // ONLY SET TO "true" when app is done ;)
+		
+		// 1. Disable explorer.exe (exec once)
+		
+		// 2. Disable selected hotkeys (loop exec)
+		
+		// 3. Disable taskmgr when opened (loop exec !CAUTION!)
+		
+		// 4. Enable application to open on startup (exec once)
+		
+		
 	}
 	
 	// Unlocks PC (removes all security measures and user gains access to its PC)
