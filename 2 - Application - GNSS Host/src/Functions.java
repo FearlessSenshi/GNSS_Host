@@ -25,7 +25,7 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 
-// Committed by: LENOVO ;) 10-11-2023 @0131
+// Committed by: SENSHI ;) 10-18-2023 @2115
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -63,33 +63,13 @@ public class Functions implements Runnable{
 	private OutputStream out;
 	private PrintWriter pw;
 	
+	
+	
+	
+	// Constructor - Assigning buttons with functions
+	
 	public Functions() {
 		gui = new MainApp();
-		
-		gui.w.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				System.out.println(e.getKeyChar() + " - " + e.getKeyCode());
-				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_PLUS) {
-					
-		        } 
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-		});
 		
 		gui.createBtn.addActionListener(new ActionListener() {
 			@Override
@@ -105,12 +85,12 @@ public class Functions implements Runnable{
 			}
 		});
 		
-		gui.createBtn2.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				connectToHost();
-			}
-		});
+//		gui.createBtn2.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				connectToHost();
+//			}
+//		});
 		
 		gui.connectHostBtn.addActionListener(new ActionListener() {
 			@Override
@@ -162,6 +142,7 @@ public class Functions implements Runnable{
 		});
 	}
 	
+	// MAIN - Runs the application from GUI
 	public static void main(String[] args) {
 		Functions f = new Functions();
 		f.gui.setVisible(true);
@@ -169,14 +150,17 @@ public class Functions implements Runnable{
 	
 	@Override
 	public void run() {
+		
+		// AUTHENTICATION - When authentication between host and client didn't fail, continue
 		while(!authFailed) {
 			try {
+				
+				// Creates a host connection session if the client is NOT verified by the PC
 				if(!clientVerified) {
-					// Host established connection to client
 					attempts = 3;
 					clientVerified = false;
 					serverPort = generatePort();
-					// checkNetworkConnection();
+					
 			        while(true) {
 						ss = new ServerSocket(serverPort);
 						System.out.println("Waiting for client connection...");
@@ -193,13 +177,16 @@ public class Functions implements Runnable{
 			    		String output = "";
 			    		String senderAddress;
 			    		try {
+			    			
 							// Check if client is connected
 							if (cs.isConnected()) {
 								gui.clientConnectStatus.setText("Status: Awaiting client verification...");
-								// Verify if the client is also using the client app
+								
+								// Waits the client's response for the passcode
 								output = br.readLine();
 								System.out.println(output);
-								// This condition checks the client's input for the secret passphrase "connectVerify<passcode>"
+								
+								// Verifies client connection and opens access control
 								if (output.equals("connectVerify" + hostPasscode)) {
 									System.out.println("Client Verified!");
 									gui.cardLayout.show(gui.container, "connectStatusPanel");
@@ -209,12 +196,12 @@ public class Functions implements Runnable{
 
 									InetAddress ia = cs.getInetAddress();
 									System.out.println("Client Local IP Address: " + ia.getHostAddress());
-									
-									//t4.interrupt();
 									runInputListener(br);
 									break;
-								} else {
-									// Decrease attempt by -1
+								} 
+								
+								// When client inputs wrong passcode, decrease attempt by -1
+								else {
 									System.out.println("Incorrect Passcode! ");
 									if(attempts > 0) {
 										// Sends out an input saying that the given passcode was incorrect
@@ -228,9 +215,10 @@ public class Functions implements Runnable{
 										pw.close();
 										br.close();
 										System.out.println(attempts);
-									}
-									else {
-										// If attempt ran out to 0, disconnect connecting client
+								}
+									
+								// Disconnect connecting client if attempt ran out to 0
+								else {
 										pw.println("accessDenied");
 										cs.close();
 										ss.close();
@@ -238,20 +226,23 @@ public class Functions implements Runnable{
 										out.close();
 										pw.close();
 										br.close();
-										//t4.interrupt();
+										
+										// Shows the home panel
 										gui.cardLayout.show(gui.container, "hostPanel");
 										authFailed = true;
 										break;
-									}
 								}
 							}
+						}
+							
 							// if client is not connected...
 							else {
 								runOutputSender(pw, "gnssHostDisconnected");
 							}
-						} 
+						}
+			    		
+			    		// Disconnect the socket and all streams
 						catch (IOException e) {
-							// Disconnect the socket and all streams
 							e.printStackTrace();
 							cs.close();
 							ss.close();
@@ -259,7 +250,6 @@ public class Functions implements Runnable{
 							out.close();
 							br.close();
 							pw.close();
-							//t4.interrupt();
 							break;
 						}
 			        }
@@ -267,12 +257,20 @@ public class Functions implements Runnable{
 				
 			} catch(Exception e) {
 				e.printStackTrace();
-				//t4.interrupt();
 				break;
 			}
 		}
 	}
 	
+	// Opens a panel for CREATING a Host Connection
+		void showAuthPanel() {
+			gui.cardLayout.show(gui.container, "authPanel");
+			gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+			gui.hostIPLabel.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
+			gui.generatedPasscode.setText(String.valueOf(generatePasscode()));
+		}
+	
+	// Gets this PC's private IP Address
 	void createHost() throws UnknownHostException {
 		InetAddress inetAddress = InetAddress.getLocalHost();
 		hostIP = inetAddress.getLocalHost().getHostAddress();
@@ -283,44 +281,36 @@ public class Functions implements Runnable{
 		t1.start();
 	}
 	
+	// Creates a Socket Connection in this PC
+		void joinHost(String ip, int port, int passcode) {
+			try {
+				System.out.println("Connecting to hotspot...");
+				Socket s = new Socket(ip,port);
+				System.out.println("Connected!");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	
+	// Opens a panel for JOINING a Host Connection
 	void connectToHost() {
 		gui.cardLayout.show(gui.container, "connectToHostPanel");
 	}
 	
-	void joinHost(String ip, int port, int passcode) {
-		try {
-			System.out.println("Connecting to hotspot...");
-			Socket s = new Socket(ip,port);
-			System.out.println("Connected!");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	void showAuthPanel() {
-		gui.cardLayout.show(gui.container, "authPanel");
-		gui.clientConnectStatus.setText("Status: Waiting for client connection...");
-		gui.hostIPLabel.setText(getHostDetails());
-		gui.generatedPasscode.setText(String.valueOf(generatePasscode()));
-	}
-	
-	// Host Functions
-	
-	private String getHostDetails() {
-		return hostIP + " - " + "Port: " + serverPort + " - " + hostName;
-	}
-	
+	// Generates a random port
 	private int generatePort() {
 		// return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
 		return 1;
 	}
 	
+	// Generates a random passcode
 	private int generatePasscode() {
 		hostPasscode = (int)(Math.random()*(100000-10000))+10000;
 		return hostPasscode;
 	}
 	
+	// Runs the InputListener
 	public void runInputListener(BufferedReader br) {
 		// InputStream
 		Runnable runnable = new Runnable() {
@@ -436,18 +426,22 @@ public class Functions implements Runnable{
 		}
 	}
 	
+	// Locks PC (activates all security measures and denies access to user in selected terms)
 	private void lockPC() {
 		System.out.println("[!] Locking PC!");
 		gui.securityStatusLabel.setText("Security Status: Locked");
-		// Locks pc (shows whitescreen that cannot be exited or moved, some hotkeys are disabled)
 		gui.w.setVisible(true);
-		// gui.w.setAlwaysOnTop(true); DO NOT UNCOMMENT, UNLESS A FUNCTION IS CREATED TO DESTROY THE APP
+		gui.w.setAlwaysOnTop(true); // DO NOT UNCOMMENT, UNLESS A FUNCTION IS CREATED TO DESTROY THE APP
 	}
+	
+	// Unlocks PC (removes all security measures and user gains access to its PC)
 	private void unlockPC() {
 		System.out.println("[!] Unlocking PC!");
 		gui.securityStatusLabel.setText("Security Status: Unlocked");
 		gui.w.setVisible(false);
 	}
+	
+	// Automatically locks/unlocks PC
 	private void setControlMode() {
 		System.out.println("[!] Control mode set!");
 		if(!autoControl) {
@@ -459,6 +453,8 @@ public class Functions implements Runnable{
 			gui.controlModeLabel.setText("Control Mode: Manual");
 		}
 	}
+	
+	// Closes the socket connection, therefore two devices will disconnect
 	private void disconnect() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		clientVerified = false;
@@ -471,15 +467,14 @@ public class Functions implements Runnable{
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
+	// Cancels the host connection
 	private void cancelHostConnection() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		ss.close();
-		//t4.interrupt();
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
 	/*
-	 Hello po
 	 Prohibited Hotkeys in Lock Mode:
 	 
 	 Win + L = Windows Lock Screen

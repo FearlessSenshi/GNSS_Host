@@ -1,12 +1,26 @@
-Security Measures for GNSS:
+Security Measures for NSS:
 
 1. Disable Screen Access
 	> users shouldn't access the screen (JWindow)
+	
 2. Disable task manager and cmd
-	> task manager will be exited if opened. (Process.getRuntime() )
+	> task manager will be exited if opened. (use taskkill command in cmd)
+	
 3. Disable USB Removable Drives (gpedit.msc)
-	> USB drives cannot run applications on insertion 
-4. GNSS will run on startup
+	> USB drives cannot run applications on insertion
+	
+4. NSS will run on startup (use task schedule for faster startup)
 	> even if the unit was rebooted, it will still run its security measures
-5. GNSS will not close on shutdown (gpedit.msc)
+	
+5. NSS will not close on shutdown (gpedit.msc)
 	> windows will not ask to exit GNSS before shutting down.
+
+6. NSS will disable exit hotkey (Alt+f4) in session (JFrame.DO_NOTHING_ON_CLOSE)
+	> the window will ignore the exit hotkey (Alt+f4)
+	
+7. Disable alt+tab (Robot)
+	> lock screen must be always on front
+	> disables the alt key temporarily
+	
+8. Closes explorer.exe (taskkill)
+	> explorer.exe will be temporarily closed to prevent win key usage and other resources

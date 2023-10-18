@@ -79,7 +79,7 @@ public class MainApp extends JFrame {
 		container = getContentPane();
 		container.setLayout(cardLayout);
 
-		setTitle("GeoNetwork Security System");
+		setTitle("Network Security System");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 600, 600);
 		setLocationRelativeTo(null);
@@ -95,7 +95,7 @@ public class MainApp extends JFrame {
 		container.add(createHostPanel, "hostPanel");
 		createHostPanel.setLayout(null);
 
-		titleLabel = new JLabel("GeoNetwork Security System (Host)");
+		titleLabel = new JLabel("Network Security System (Host)");
 		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		titleLabel.setBounds(10, 122, 564, 37);
 		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 30));
@@ -104,7 +104,7 @@ public class MainApp extends JFrame {
 		dialog1 = new JLabel("Connect via Wi-Fi");
 		dialog1.setHorizontalAlignment(SwingConstants.CENTER);
 		dialog1.setFont(new Font("Tahoma", Font.BOLD, 20));
-		dialog1.setBounds(48, 264, 208, 37);
+		dialog1.setBounds(178, 265, 208, 37);
 		createHostPanel.add(dialog1);
 
 		createBtn = new JButton("Wi-Fi");
@@ -113,23 +113,23 @@ public class MainApp extends JFrame {
 		createBtn.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
 		createBtn.setFont(new Font("Tahoma", Font.BOLD, 25));
 		createBtn.setFocusable(false);
-		createBtn.setBounds(69, 312, 167, 53);
+		createBtn.setBounds(199, 313, 167, 53);
 		createHostPanel.add(createBtn);
 		
-		JLabel lblConnectViaHotspot = new JLabel("Connect via Hotspot");
-		lblConnectViaHotspot.setHorizontalAlignment(SwingConstants.CENTER);
-		lblConnectViaHotspot.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblConnectViaHotspot.setBounds(313, 264, 220, 37);
-		createHostPanel.add(lblConnectViaHotspot);
-		
-		createBtn2 = new JButton("Hotspot");
-		createBtn2.setFont(new Font("Tahoma", Font.BOLD, 25));
-		createBtn2.setFocusable(false);
-		createBtn2.setBorderPainted(false);
-		createBtn2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
-		createBtn2.setBackground(new Color(128, 128, 255));
-		createBtn2.setBounds(333, 312, 167, 53);
-		createHostPanel.add(createBtn2);
+//		JLabel lblConnectViaHotspot = new JLabel("Connect via Hotspot");
+//		lblConnectViaHotspot.setHorizontalAlignment(SwingConstants.CENTER);
+//		lblConnectViaHotspot.setFont(new Font("Tahoma", Font.BOLD, 20));
+//		lblConnectViaHotspot.setBounds(313, 264, 220, 37);
+//		createHostPanel.add(lblConnectViaHotspot);
+//		
+//		createBtn2 = new JButton("Hotspot");
+//		createBtn2.setFont(new Font("Tahoma", Font.BOLD, 25));
+//		createBtn2.setFocusable(false);
+//		createBtn2.setBorderPainted(false);
+//		createBtn2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+//		createBtn2.setBackground(new Color(128, 128, 255));
+//		createBtn2.setBounds(333, 312, 167, 53);
+//		createHostPanel.add(createBtn2);
 
 		authPanel = new JPanel();
 		authPanel.setFocusable(false);
@@ -137,7 +137,7 @@ public class MainApp extends JFrame {
 		container.add(authPanel, "authPanel");
 		authPanel.setLayout(null);
 
-		titleLabel_1 = new JLabel("GeoNetwork Security System (Host)");
+		titleLabel_1 = new JLabel("Network Security System (Host)");
 		titleLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		titleLabel_1.setFont(new Font("Tahoma", Font.BOLD, 30));
 		titleLabel_1.setBounds(10, 80, 564, 37);
