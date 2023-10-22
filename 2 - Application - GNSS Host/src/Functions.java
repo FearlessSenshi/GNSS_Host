@@ -27,7 +27,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO ;)
-//		DT  : 10-18-2023 2143
+//		DT  : 10-23-2023 0005
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -62,10 +62,22 @@ public class Functions implements Runnable{
 	private OutputStream out;
 	private PrintWriter pw;
 	
+	// Processes
+	private Process p;
+	private ProcessBuilder exitExp,openExp,createTask,removeTask,killMgr;
+	
 	// Constructor - Assigning buttons with functions
 	
 	public Functions() {
 		gui = new MainApp();
+		
+		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe");
+		openExp = new ProcessBuilder("explorer.exe");
+		
+		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", "<Directory to the app>", "/SC", "ONLOGON");
+		removeTask = new ProcessBuilder("schtasks", "/Delete", "/TN", "NetSecuritySystem", "/F");
+		
+		killMgr = new ProcessBuilder("taskkill", "/F", "/IM", "taskmgr.exe");
 		
 		gui.createBtn.addActionListener(new ActionListener() {
 			@Override
@@ -157,6 +169,7 @@ public class Functions implements Runnable{
 					clientVerified = false;
 					serverPort = generatePort();
 					
+					// Establish a ServerSocket connection
 			        while(true) {
 						ss = new ServerSocket(serverPort);
 						System.out.println("Waiting for client connection...");
@@ -316,10 +329,9 @@ public class Functions implements Runnable{
 					try {
 						String output = br.readLine();
 						if(clientVerified) {
-							command(output);
+						
 							System.out.println(output);
 						}
-						
 					} catch (IOException e) {
 						try {
 							br.close();
@@ -349,21 +361,6 @@ public class Functions implements Runnable{
 		};
 		t3 = new Thread(runnable);
 		t3.start();
-	}
-	
-	// Runs device connection checker (detects session connectivity)
-	public void runDeviceConnChecker() {
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				
-			}
-			
-		};
-		t4 = new Thread(runnable);
-		t4.start();
 	}
 	
 	// (EXPERIMENTAL) Checks network connectivity
@@ -440,13 +437,16 @@ public class Functions implements Runnable{
 	}
 	
 	// Locks PC (activates all security measures and denies access to user in selected terms)
-	private void lockPC() {
+	private void lockPC() throws IOException {
 		System.out.println("[!] Locking PC!");
 		gui.securityStatusLabel.setText("Security Status: Locked");
 		gui.w.setVisible(true);
 		gui.w.setAlwaysOnTop(false); // ONLY SET TO "true" when app is done ;)
 		
+		// (Activate all security measures)
+		
 		// 1. Disable explorer.exe (exec once)
+		p = exitExp.start();
 		
 		// 2. Disable selected hotkeys (loop exec)
 		
@@ -458,13 +458,24 @@ public class Functions implements Runnable{
 	}
 	
 	// Unlocks PC (removes all security measures and user gains access to its PC)
-	private void unlockPC() {
+	private void unlockPC() throws IOException {
 		System.out.println("[!] Unlocking PC!");
 		gui.securityStatusLabel.setText("Security Status: Unlocked");
 		gui.w.setVisible(false);
+		
+		// (Deactivate all security measures)
+		
+		// 1. Enable explorer.exe
+		p = openExp.start();
+		
+		// 2. Enable hotkeys
+		
+		// 3. Enable taskmanager when opened
+		
+		// 4. Remove appication to open on startup
 	}
 	
-	// Automatically locks/unlocks PC
+	// Sets control mode (Automatically/Manually locks/unlocks PC)
 	private void setControlMode() {
 		System.out.println("[!] Control mode set!");
 		if(!autoControl) {
@@ -475,6 +486,26 @@ public class Functions implements Runnable{
 			autoControl = false;
 			gui.controlModeLabel.setText("Control Mode: Manual");
 		}
+	}
+	
+	// Check if taskmgr is open (closes taskmgr when open)
+	private void disableTaskMgr() {
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						p = killMgr.start();
+						Thread.sleep(1000);
+					} catch (IOException | InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		t4 = new Thread(r);
+		t4.start();
 	}
 	
 	// Closes the socket connection, therefore two devices will disconnect
