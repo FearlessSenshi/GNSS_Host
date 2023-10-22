@@ -1,5 +1,7 @@
+import java.awt.AWTException;
 import java.awt.Dimension;
 import java.awt.RenderingHints.Key;
+import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,6 +49,7 @@ public class Functions implements Runnable{
 	public boolean autoControl = false;
 	public boolean stopNetChk = false;
 	public boolean authFailed = false;
+	public Robot rt;
 	
 	// Client Variables
 	public String clientIP;
@@ -329,7 +332,7 @@ public class Functions implements Runnable{
 					try {
 						String output = br.readLine();
 						if(clientVerified) {
-						
+							command(output);
 							System.out.println(output);
 						}
 					} catch (IOException e) {
@@ -400,8 +403,8 @@ public class Functions implements Runnable{
 			}
 		};
 		
-		t5 = new Thread(runnable);
-		t5.start();
+//		t5 = new Thread(runnable);
+//		t5.start();
 	}
 	
 	public void command(String cmd) throws IOException {
@@ -438,41 +441,56 @@ public class Functions implements Runnable{
 	
 	// Locks PC (activates all security measures and denies access to user in selected terms)
 	private void lockPC() throws IOException {
-		System.out.println("[!] Locking PC!");
-		gui.securityStatusLabel.setText("Security Status: Locked");
-		gui.w.setVisible(true);
-		gui.w.setAlwaysOnTop(false); // ONLY SET TO "true" when app is done ;)
-		
-		// (Activate all security measures)
-		
-		// 1. Disable explorer.exe (exec once)
-		p = exitExp.start();
-		
-		// 2. Disable selected hotkeys (loop exec)
-		
-		// 3. Disable taskmgr when opened (loop exec !CAUTION!)
-		
-		// 4. Enable application to open on startup (exec once)
-		
-		
+		if(unlocked) {
+			unlocked = false;
+			System.out.println("[!] Locking PC!");
+			gui.securityStatusLabel.setText("Security Status: Locked");
+			//gui.w.setVisible(true);
+			gui.w.setAlwaysOnTop(false); // ONLY SET TO "true" when app is done ;)
+			
+			// (Activate all security measures)
+			
+			// 1. Disable explorer.exe (exec once)
+			p = exitExp.start();
+			
+			// 2. Disable selected hotkeys (loop exec)
+			disableAltKey();
+			
+			// 3. Disable taskmgr when opened (loop exec !CAUTION!)
+			disableTaskMgr();
+			
+			// 4. Enable application to open on startup (exec once)
+		}
+		else {
+			System.out.println("Device is already locked!");
+		}
 	}
 	
 	// Unlocks PC (removes all security measures and user gains access to its PC)
 	private void unlockPC() throws IOException {
-		System.out.println("[!] Unlocking PC!");
-		gui.securityStatusLabel.setText("Security Status: Unlocked");
-		gui.w.setVisible(false);
-		
-		// (Deactivate all security measures)
-		
-		// 1. Enable explorer.exe
-		p = openExp.start();
-		
-		// 2. Enable hotkeys
-		
-		// 3. Enable taskmanager when opened
-		
-		// 4. Remove appication to open on startup
+		if(!unlocked) {
+			unlocked = true;
+			System.out.println("[!] Unlocking PC!");
+			gui.securityStatusLabel.setText("Security Status: Unlocked");
+			gui.w.setVisible(false);
+			
+			// (Deactivate all security measures)
+			
+			// 1. Enable explorer.exe
+			p = openExp.start();
+			
+			// 2. Enable hotkeys
+			t5.interrupt();
+			
+			// 3. Enable taskmanager when opened
+			t4.interrupt();
+			System.out.println("Taskmanager killer has stopped.");
+			
+			// 4. Remove application to open on startup
+		}
+		else {
+			System.out.println("Device is already unlocked!");
+		}
 	}
 	
 	// Sets control mode (Automatically/Manually locks/unlocks PC)
@@ -499,13 +517,41 @@ public class Functions implements Runnable{
 						Thread.sleep(1000);
 					} catch (IOException | InterruptedException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						break;
 					}
 				}
 			}
 		};
 		t4 = new Thread(r);
 		t4.start();
+	}
+	
+	private void disableAltKey(){
+		try {
+			rt = new Robot();
+		} catch (AWTException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					rt.setAutoDelay(1);
+					rt.keyRelease(KeyEvent.VK_ALT);
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						break;
+					}
+				}
+				
+			}
+		};
+		
+		t5 = new Thread(r);
+		t5.start();
 	}
 	
 	// Closes the socket connection, therefore two devices will disconnect
