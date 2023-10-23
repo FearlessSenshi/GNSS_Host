@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO ;)
-//		DT  : 10-23-2023 0110
+//		DT  : 10-23-2023 1913
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -159,7 +159,7 @@ public class Functions implements Runnable{
 		f.gui.setVisible(true);
 	}
 	
-	@Override
+	@Override // This is the main thread
 	public void run() {
 		
 		// AUTHENTICATION - When authentication between host and client didn't fail, continue
@@ -209,6 +209,7 @@ public class Functions implements Runnable{
 									InetAddress ia = cs.getInetAddress();
 									System.out.println("Client Local IP Address: " + ia.getHostAddress());
 									runInputListener(br);
+									chkConnection();
 									break;
 								} 
 								
@@ -355,12 +356,10 @@ public class Functions implements Runnable{
 	// Runs output listener (sends an output to the client)
 	public void runOutputSender(PrintWriter pw, String message) {
 		Runnable runnable = new Runnable() {
-
 			@Override
 			public void run() {
 				pw.println(message);
 			}
-			
 		};
 		t3 = new Thread(runnable);
 		t3.start();
@@ -407,6 +406,7 @@ public class Functions implements Runnable{
 //		t5.start();
 	}
 	
+	// Command method (executes commands depending on the input of the user)
 	public void command(String cmd) throws IOException {
 		if(clientVerified) {
 			switch(cmd) {
@@ -546,12 +546,46 @@ public class Functions implements Runnable{
 						break;
 					}
 				}
-				
 			}
 		};
 		
 		t5 = new Thread(r);
 		t5.start();
+	}
+	
+	// Checks connection using HEARTBEAT technique
+	private void chkConnection() {
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ServerSocket ssCon = new ServerSocket(11111);
+					Socket sCon = ssCon.accept();
+					sCon.setSoTimeout(2000);
+					
+					InputStream is = sCon.getInputStream();
+					BufferedReader br = new BufferedReader(new InputStreamReader(is));
+					
+					byte[] buffer = new byte[1024];
+					int bytesRead;
+					
+					String line;
+					
+					while((bytesRead = is.read(buffer)) != -1) {
+						String message = new String(buffer, 0, bytesRead);
+                        if (message.equals("HEARTBEAT")) {
+                            System.out.println("Received heartbeat from client: " + sCon.getInetAddress());
+                        }
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.out.println("Client disconnected!");
+					e.printStackTrace();
+				}
+			}
+		};
+		t6 = new Thread(r);
+		t6.start();
 	}
 	
 	// Closes the socket connection, therefore two devices will disconnect
