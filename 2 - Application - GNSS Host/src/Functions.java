@@ -580,12 +580,28 @@ public class Functions implements Runnable{
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					System.out.println("Client disconnected!");
+//					try {
+//						indirectDc();
+//						lockPC();
+//					} catch (IOException e1) {
+//						
+//					}
 					e.printStackTrace();
 				}
 			}
 		};
 		t6 = new Thread(r);
 		t6.start();
+	}
+	
+	// Closes the socket connection when client disconnects without confirmation
+	private void indirectDc() throws IOException{
+		cs.close();
+		ss.close();
+		is.close();
+		out.close();
+		br.close();
+		pw.close();
 	}
 	
 	// Closes the socket connection, therefore two devices will disconnect
@@ -606,6 +622,21 @@ public class Functions implements Runnable{
 		System.out.println("[!] Disconnecting!");
 		ss.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
+	}
+	
+	private void createNewConnection() {
+		while(true) {
+			try {
+				ss = new ServerSocket(serverPort);
+				cs = ss.accept();
+				if(cs.isConnected()) {
+					unlockPC();
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/*
