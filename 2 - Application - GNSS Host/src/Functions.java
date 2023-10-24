@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO ;)
-//		DT  : 10-24-2023 1840
+//		DT  : 10-24-2023 2233
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -555,12 +555,15 @@ public class Functions implements Runnable{
 	
 	// Checks connection using HEARTBEAT technique
 	private void chkConnection() {
+		
 		Runnable r = new Runnable() {
+			ServerSocket ssCon;
+			Socket sCon;
 			@Override
 			public void run() {
 				try {
-					ServerSocket ssCon = new ServerSocket(11111);
-					Socket sCon = ssCon.accept();
+					ssCon = new ServerSocket(11111);
+					sCon = ssCon.accept();
 					sCon.setSoTimeout(2000);
 					
 					InputStream is = sCon.getInputStream();
@@ -580,12 +583,13 @@ public class Functions implements Runnable{
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					System.out.println("Client disconnected!");
-//					try {
-//						indirectDc();
-//						lockPC();
-//					} catch (IOException e1) {
-//						
-//					}
+					System.out.println("Retrying connection to client...");
+					try {
+						indirectDc();
+						createNewConnection();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 					e.printStackTrace();
 				}
 			}
@@ -595,7 +599,7 @@ public class Functions implements Runnable{
 	}
 	
 	// Closes the socket connection when client disconnects without confirmation
-	private void indirectDc() throws IOException{
+	private void indirectDc() throws IOException {
 		cs.close();
 		ss.close();
 		is.close();
@@ -624,16 +628,37 @@ public class Functions implements Runnable{
 		gui.cardLayout.show(gui.container, "hostPanel");
 	}
 	
+	// Creates new connection - creates a new connection for the verified client to connect
 	private void createNewConnection() {
 		while(true) {
 			try {
 				ss = new ServerSocket(serverPort);
 				cs = ss.accept();
+				is = cs.getInputStream();
+	    		br = new BufferedReader(new InputStreamReader(is));
+	    		out = cs.getOutputStream();
+	    		pw = new PrintWriter(out,true);
 				if(cs.isConnected()) {
-					unlockPC();
+					System.out.println("Server has connected to client successfully!");
+					// unlockPC();
+					chkConnection();
+					runInputListener(br);
+					break;
 				}
 			}
 			catch(Exception e) {
+				try {
+					ss.close();
+				} catch (IOException e1) {
+					System.out.println("Error in closing serversocket.");
+					e1.printStackTrace();
+				}
+				try {
+					cs.close();
+				} catch (IOException e1) {
+					System.out.println("Error in closing client socket.");
+					e1.printStackTrace();
+				}
 				e.printStackTrace();
 			}
 		}
