@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO ;)
-//		DT  : 10-24-2023 2233
+//		DT  : 10-25-2023 2048
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -339,7 +339,8 @@ public class Functions implements Runnable{
 					} catch (IOException e) {
 						try {
 							br.close();
-						} catch (IOException e1) {
+							break;
+						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
 						e.printStackTrace();
@@ -559,6 +560,8 @@ public class Functions implements Runnable{
 		Runnable r = new Runnable() {
 			ServerSocket ssCon;
 			Socket sCon;
+			InputStream is;
+			BufferedReader br;
 			@Override
 			public void run() {
 				try {
@@ -566,8 +569,8 @@ public class Functions implements Runnable{
 					sCon = ssCon.accept();
 					sCon.setSoTimeout(2000);
 					
-					InputStream is = sCon.getInputStream();
-					BufferedReader br = new BufferedReader(new InputStreamReader(is));
+					is = sCon.getInputStream();
+					br = new BufferedReader(new InputStreamReader(is));
 					
 					byte[] buffer = new byte[1024];
 					int bytesRead;
@@ -585,7 +588,12 @@ public class Functions implements Runnable{
 					System.out.println("Client disconnected!");
 					System.out.println("Retrying connection to client...");
 					try {
+						sCon.close();
+						ssCon.close();
+						is.close();
+						br.close();
 						indirectDc();
+						lockPC();
 						createNewConnection();
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -640,9 +648,9 @@ public class Functions implements Runnable{
 	    		pw = new PrintWriter(out,true);
 				if(cs.isConnected()) {
 					System.out.println("Server has connected to client successfully!");
-					// unlockPC();
-					chkConnection();
+					unlockPC();
 					runInputListener(br);
+					chkConnection();
 					break;
 				}
 			}
@@ -662,6 +670,7 @@ public class Functions implements Runnable{
 				e.printStackTrace();
 			}
 		}
+		
 	}
 	
 	/*
