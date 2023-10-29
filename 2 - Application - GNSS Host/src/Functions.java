@@ -19,6 +19,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -28,8 +29,8 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 // Last committed by: 
-// 		Name: LENOVO ;)
-//		DT  : 10-25-2023 2048
+// 		Name: LENOVO LEGION ;)
+//		DT  : 10-29-2023 1934
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -560,45 +561,58 @@ public class Functions implements Runnable{
 		Runnable r = new Runnable() {
 			ServerSocket ssCon;
 			Socket sCon;
-			InputStream is;
-			BufferedReader br;
+			InputStream isCon;
+			BufferedReader brCon;
 			@Override
 			public void run() {
 				try {
 					ssCon = new ServerSocket(11111);
+					System.out.println("Waiting for client connection for connection checker...");
 					sCon = ssCon.accept();
 					sCon.setSoTimeout(2000);
-					
-					is = sCon.getInputStream();
-					br = new BufferedReader(new InputStreamReader(is));
-					
+					System.out.println("Created" + sCon.isClosed() + "\n" + ssCon.isClosed() + "\n");
+
+					isCon = sCon.getInputStream();
+					brCon = new BufferedReader(new InputStreamReader(isCon));
+
 					byte[] buffer = new byte[1024];
 					int bytesRead;
-					
+
 					String line;
-					
-					while((bytesRead = is.read(buffer)) != -1) {
-						String message = new String(buffer, 0, bytesRead);
-                        if (message.equals("HEARTBEAT")) {
-                            System.out.println("Received heartbeat from client: " + sCon.getInetAddress());
-                        }
+
+					while (true) {
+						if(t6.isInterrupted()) {
+							sCon.close();
+							ssCon.close();
+							isCon.close();
+							brCon.close();
+							break;
+						}
+						if ((bytesRead = isCon.read(buffer)) != -1) {
+							String message = new String(buffer, 0, bytesRead);
+							if (message.equals("HEARTBEAT")) {
+								System.out.println("Received heartbeat from client: " + sCon.getInetAddress());
+							}
+						} 
+						else
+							break;
+
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					System.out.println("Client disconnected!");
 					System.out.println("Retrying connection to client...");
+					e.printStackTrace();
 					try {
 						sCon.close();
 						ssCon.close();
-						is.close();
-						br.close();
+						isCon.close();
+						brCon.close();
 						indirectDc();
 						lockPC();
 						createNewConnection();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
-					e.printStackTrace();
 				}
 			}
 		};
@@ -620,6 +634,8 @@ public class Functions implements Runnable{
 	private void disconnect() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		clientVerified = false;
+		t6.interrupt();
+		unlockPC();
 		cs.close();
 		ss.close();
 		is.close();
