@@ -447,8 +447,8 @@ public class Functions implements Runnable{
 			unlocked = false;
 			System.out.println("[!] Locking PC!");
 			gui.securityStatusLabel.setText("Security Status: Locked");
-			//gui.w.setVisible(true);
-			gui.w.setAlwaysOnTop(false); // ONLY SET TO "true" when app is done ;)
+			gui.w.setVisible(true);
+			gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
 			

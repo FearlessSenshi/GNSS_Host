@@ -63,8 +63,9 @@ public class MainApp extends JFrame {
 	public JLabel securityStatusLabel;
 	public JLabel controlModeLabel;
 	
-	public JWindow w;
+	//public JWindow w;
 	public JLabel windowLockLabel;
+	public JFrame w;
 	
 	/**
 	 * Create the frame.
@@ -290,10 +291,23 @@ public class MainApp extends JFrame {
 		btnCancel.setBounds(308, 346, 158, 57);
 		connectToHostPanel.add(btnCancel);
 		
-		w = new JWindow();
-		w.getContentPane().setLayout(new BorderLayout());
+//		w = new JWindow();
+//		w.getContentPane().setLayout(new BorderLayout());
+//		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
+//		//w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
+//		w.setBounds(100,100,100,200);
+//		w.setLocationRelativeTo(null);
+//		
+//		windowLockLabel = new JLabel("Your PC is locked.");
+//		windowLockLabel.setHorizontalAlignment(SwingConstants.CENTER);
+//		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 50));
+//		w.getContentPane().add(windowLockLabel, BorderLayout.CENTER);
+		
+		w = new JFrame("lockFrame");
+		w.getContentPane().setLayout(null);
 		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
 		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
+		w.setBounds(100,100,100,200);
 		w.setLocationRelativeTo(null);
 		
 		windowLockLabel = new JLabel("Your PC is locked.");
