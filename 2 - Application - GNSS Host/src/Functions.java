@@ -30,7 +30,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO LEGION ;)
-//		DT  : 11-02-2023 2002
+//		DT  : 11-03-2023 0221
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -151,6 +151,20 @@ public class Functions implements Runnable{
 				}
 			}
 			
+		});
+		
+		gui.recoveryBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.lsCardLayout.show(gui.lsContainer, "recoveryPanel");
+			}
+		});
+		
+		gui.cancelRecoveryBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
+			}
 		});
 	}
 	
@@ -447,6 +461,9 @@ public class Functions implements Runnable{
 			unlocked = false;
 			System.out.println("[!] Locking PC!");
 			gui.securityStatusLabel.setText("Security Status: Locked");
+			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
+			gui.uniquePasscodeInput.setText("");
+			gui.inputStatusLbl.setVisible(false);
 			gui.w.setVisible(true);
 			gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			

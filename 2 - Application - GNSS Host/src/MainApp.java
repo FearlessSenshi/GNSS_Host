@@ -63,9 +63,24 @@ public class MainApp extends JFrame {
 	public JLabel securityStatusLabel;
 	public JLabel controlModeLabel;
 	
-	//public JWindow w;
+	public CardLayout lsCardLayout;
+	public Container lsContainer;
+	
+	public JWindow w;
+	
+	public JPanel lockPanel;
+	public JPanel recoveryPanel;
+	
 	public JLabel windowLockLabel;
-	public JFrame w;
+	public JLabel recoveryLabel;
+	public JLabel enterPasscodeLbl;
+	public JLabel inputStatusLbl;
+	
+	public JButton recoveryBtn;
+	public JButton cancelRecoveryBtn;
+	public JButton recoverBtn;
+	
+	public JTextField uniquePasscodeInput;
 	
 	/**
 	 * Create the frame.
@@ -88,8 +103,6 @@ public class MainApp extends JFrame {
 
 		container.setBackground(new Color(128, 255, 128));
 		container.setBounds(0, 0, 584, 561);
-		// contentPane.add(container);
-		container.setLayout(cardLayout);
 
 		createHostPanel = new JPanel();
 		createHostPanel.setBackground(new Color(240, 240, 240));
@@ -291,28 +304,62 @@ public class MainApp extends JFrame {
 		btnCancel.setBounds(308, 346, 158, 57);
 		connectToHostPanel.add(btnCancel);
 		
-//		w = new JWindow();
-//		w.getContentPane().setLayout(new BorderLayout());
-//		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
-//		//w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
-//		w.setBounds(100,100,100,200);
-//		w.setLocationRelativeTo(null);
-//		
-//		windowLockLabel = new JLabel("Your PC is locked.");
-//		windowLockLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 50));
-//		w.getContentPane().add(windowLockLabel, BorderLayout.CENTER);
 		
-		w = new JFrame("lockFrame");
-		w.getContentPane().setLayout(null);
+		
+		w = new JWindow();
 		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
 		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
-		w.setBounds(100,100,100,200);
 		w.setLocationRelativeTo(null);
 		
+		lsCardLayout = new CardLayout(0,0);
+		lsContainer = w.getContentPane();
+		lsContainer.setLayout(lsCardLayout);
+		
+		lockPanel = new JPanel();
+		lsContainer.add(lockPanel,"lockPanel");
+		lockPanel.setLayout(null);
+		
 		windowLockLabel = new JLabel("Your PC is locked.");
+		windowLockLabel.setBounds(541, 312, 439, 70);
 		windowLockLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 50));
-		w.getContentPane().add(windowLockLabel, BorderLayout.CENTER);
+		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
+		lockPanel.add(windowLockLabel);
+		
+		recoveryBtn = new JButton("Recovery Mode");
+		recoveryBtn.setBounds(688,392,146,45);
+		lockPanel.add(recoveryBtn);
+		
+		recoveryPanel = new JPanel();
+		lsContainer.add(recoveryPanel,"recoveryPanel");
+		recoveryPanel.setLayout(null);
+		
+		recoveryLabel = new JLabel("Recovery Mode");
+		recoveryLabel.setBounds(541, 312, 439, 70);
+		recoveryLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		recoveryLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
+		recoveryPanel.add(recoveryLabel);
+		
+		enterPasscodeLbl = new JLabel("Enter Unique Passcode");
+		enterPasscodeLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		enterPasscodeLbl.setBounds(442, 405, 159, 27);
+		recoveryPanel.add(enterPasscodeLbl);
+		
+		inputStatusLbl = new JLabel("Enter input status here.");
+		inputStatusLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		inputStatusLbl.setBounds(634, 532, 159, 27);
+		recoveryPanel.add(inputStatusLbl);
+		
+		uniquePasscodeInput = new JTextField();
+		uniquePasscodeInput.setBounds(634, 395, 416, 37);
+		recoveryPanel.add(uniquePasscodeInput);
+		
+		cancelRecoveryBtn = new JButton("CANCEL");
+		cancelRecoveryBtn.setBounds(634, 465, 117, 37);
+		recoveryPanel.add(cancelRecoveryBtn);
+		
+		recoverBtn = new JButton("RECOVER");
+		recoverBtn.setBounds(785,465,117,37);
+		recoveryPanel.add(recoverBtn);
+		
 	}
 }
