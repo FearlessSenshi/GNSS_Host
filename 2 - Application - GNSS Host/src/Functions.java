@@ -7,6 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +26,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
 
@@ -30,16 +34,21 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO LEGION ;)
-//		DT  : 11-03-2023 0221
+//		DT  : 11-04-2023 2348
 
 public class Functions implements Runnable{
 	MainApp gui;
-	Thread t1,t2,t3,t4,t5,t6;
+	Thread t1,t2,t3,t4,t5,t6,t7,t8;
 	
 	// Host Variables
 	public ServerSocket ss;
 	public Socket cs;
 	public int serverPort;
+	
+	public ServerSocket ssCon;
+	public Socket sCon;
+	public InputStream isCon;
+	public BufferedReader brCon;
 	
 	public int hostPasscode;
 	public String hostIP;
@@ -51,6 +60,9 @@ public class Functions implements Runnable{
 	public boolean stopNetChk = false;
 	public boolean authFailed = false;
 	public Robot rt;
+	
+	public boolean connectedToNetwork = false;
+	public boolean retryingConnection = false;
 	
 	// Client Variables
 	public String clientIP;
@@ -69,6 +81,8 @@ public class Functions implements Runnable{
 	// Processes
 	private Process p;
 	private ProcessBuilder exitExp,openExp,createTask,removeTask,killMgr;
+	
+	public int clkCnt = 0;
 	
 	// Constructor - Assigning buttons with functions
 	
@@ -164,8 +178,46 @@ public class Functions implements Runnable{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
+				clkCnt = 0;
 			}
 		});
+		
+		gui.enterPasscodeLbl.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				clkCnt++;
+				System.out.println(clkCnt);
+				if(clkCnt == 20) {
+					gui.w.dispose();
+					gui.dispose();
+					//JOptionPane.showMessageDialog(null, "APPLICATION FORCE CLOSED!", "KILLSWITCH", JOptionPane.INFORMATION_MESSAGE);
+					System.exit(0);
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				//placeholder
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				//placeholder
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				//placeholder
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				//placeholder
+			}
+
+		});
+		
 	}
 	
 	// MAIN - Runs the application from GUI
@@ -224,7 +276,8 @@ public class Functions implements Runnable{
 									InetAddress ia = cs.getInetAddress();
 									System.out.println("Client Local IP Address: " + ia.getHostAddress());
 									runInputListener(br);
-									chkConnection();
+									chkNetworkConnection();
+									chkDeviceConnection();
 									break;
 								} 
 								
@@ -381,47 +434,6 @@ public class Functions implements Runnable{
 		t3.start();
 	}
 	
-	// (EXPERIMENTAL) Checks network connectivity
-	public void checkNetworkConnection() {
-		// Checks network connection if available or not.
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				while(true) {
-					try {
-						InetAddress ia = InetAddress.getByName("www.google.com");
-						if(!ia.isReachable(1000)){
-							System.out.println("Unreachable");
-							gui.clientConnectStatus.setText("Status: Network lost. Retrying connection...");
-						}
-						else {
-							System.out.println("Connected");
-							gui.clientConnectStatus.setText("Status: Waiting for client connection...");
-						}
-						Thread.sleep(1000);
-					} catch(IOException e) {
-						System.out.println("No internet connection." + e);
-						gui.cardLayout.show(gui.container, "hostPanel");
-						JOptionPane.showMessageDialog(null, "Network Error", "No internet connection",JOptionPane.WARNING_MESSAGE);
-						try {
-							cancelHostConnection();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						break;
-					} catch (InterruptedException e1) {
-						System.out.println("Thread killed or program stopped.");
-						break;
-					}
-				}
-			}
-		};
-		
-//		t5 = new Thread(runnable);
-//		t5.start();
-	}
-	
 	// Command method (executes commands depending on the input of the user)
 	public void command(String cmd) throws IOException {
 		if(clientVerified) {
@@ -470,7 +482,7 @@ public class Functions implements Runnable{
 			// (Activate all security measures)
 			
 			// 1. Disable explorer.exe (exec once)
-			p = exitExp.start();
+			//p = exitExp.start();
 			
 			// 2. Disable selected hotkeys (loop exec)
 			disableAltKey();
@@ -496,7 +508,7 @@ public class Functions implements Runnable{
 			// (Deactivate all security measures)
 			
 			// 1. Enable explorer.exe
-			p = openExp.start();
+			//p = openExp.start();
 			
 			// 2. Enable hotkeys
 			t5.interrupt();
@@ -567,19 +579,13 @@ public class Functions implements Runnable{
 				}
 			}
 		};
-		
 		t5 = new Thread(r);
 		t5.start();
 	}
 	
 	// Checks connection using HEARTBEAT technique
-	private void chkConnection() {
-		
+	private void chkDeviceConnection() {
 		Runnable r = new Runnable() {
-			ServerSocket ssCon;
-			Socket sCon;
-			InputStream isCon;
-			BufferedReader brCon;
 			@Override
 			public void run() {
 				try {
@@ -587,7 +593,6 @@ public class Functions implements Runnable{
 					System.out.println("Waiting for client connection for connection checker...");
 					sCon = ssCon.accept();
 					sCon.setSoTimeout(2000);
-					System.out.println("Created" + sCon.isClosed() + "\n" + ssCon.isClosed() + "\n");
 
 					isCon = sCon.getInputStream();
 					brCon = new BufferedReader(new InputStreamReader(isCon));
@@ -598,26 +603,24 @@ public class Functions implements Runnable{
 					String line;
 
 					while (true) {
-						if(t6.isInterrupted()) {
+						if (t6.isInterrupted()) {
 							sCon.close();
 							ssCon.close();
 							isCon.close();
 							brCon.close();
 							break;
 						}
-						if ((bytesRead = isCon.read(buffer)) != -1) {
+						else if ((bytesRead = isCon.read(buffer)) != -1) {
 							String message = new String(buffer, 0, bytesRead);
 							if (message.equals("HEARTBEAT")) {
 								System.out.println("Received heartbeat from client: " + sCon.getInetAddress());
 							}
-						} 
-						else
+						} else
 							break;
-
 					}
+
 				} catch (IOException e) {
 					System.out.println("Client disconnected!");
-					System.out.println("Retrying connection to client...");
 					e.printStackTrace();
 					try {
 						sCon.close();
@@ -637,6 +640,54 @@ public class Functions implements Runnable{
 		t6.start();
 	}
 	
+	// Checks network connectivity
+	public void chkNetworkConnection() {
+		// Checks network connection if host is connected to any network. (Local or with internet.)
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						Thread.sleep(1000);
+						connectedToNetwork = false;
+						Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+						while (networkInterfaces.hasMoreElements()) {
+							NetworkInterface networkInterface = networkInterfaces.nextElement();
+							if (networkInterface.isUp() && !networkInterface.isLoopback()) {
+								connectedToNetwork = true;
+							}
+						}
+						if (connectedToNetwork) {
+							System.out.println("Connected to a network.");
+							if(t6.isAlive()) {
+								System.out.println("Device connection checker is alive!");
+							}
+							else {
+								System.out.println("Device connection checker is DEAD!");
+							}
+						} 
+						else {
+							System.out.println("Not connected to a network...");
+						}
+					} catch (SocketException e) {
+						e.printStackTrace();
+						break;
+					} catch (InterruptedException e) {
+						System.out.println("Network Connection checker interrupted!");
+						e.printStackTrace();
+						break;
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+
+		t7 = new Thread(runnable);
+		t7.start();
+	}
+	
 	// Closes the socket connection when client disconnects without confirmation
 	private void indirectDc() throws IOException {
 		cs.close();
@@ -651,8 +702,11 @@ public class Functions implements Runnable{
 	private void disconnect() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		clientVerified = false;
-		t6.interrupt();
+		t6.interrupt(); // chkDeviceConnection
+		t7.interrupt(); // chkNetworkConnection
+		
 		unlockPC();
+		
 		cs.close();
 		ss.close();
 		is.close();
@@ -671,49 +725,54 @@ public class Functions implements Runnable{
 	
 	// Creates new connection - creates a new connection for the verified client to connect
 	private void createNewConnection() {
-		while(true) {
-			try {
-				ss = new ServerSocket(serverPort);
-				cs = ss.accept();
-				is = cs.getInputStream();
-	    		br = new BufferedReader(new InputStreamReader(is));
-	    		out = cs.getOutputStream();
-	    		pw = new PrintWriter(out,true);
-				if(cs.isConnected()) {
-					System.out.println("Server has connected to client successfully!");
-					unlockPC();
-					runInputListener(br);
-					chkConnection();
-					break;
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						System.out.println("Retrying connection to client...");
+
+						ss = new ServerSocket(serverPort);
+						ss.setSoTimeout(5000);
+						cs = ss.accept();
+						Thread.sleep(0);
+
+						is = cs.getInputStream();
+						br = new BufferedReader(new InputStreamReader(is));
+						out = cs.getOutputStream();
+						pw = new PrintWriter(out, true);
+						if (cs.isConnected()) {
+							System.out.println("Server has connected to client successfully!");
+							unlockPC();
+							runInputListener(br);
+							chkDeviceConnection();
+							break;
+						}
+					} catch (IOException e) {
+						try {
+							ss.close();
+							cs.close();
+						} catch (IOException e1) {
+							System.out.println("Error in closing serversocket.");
+							e1.printStackTrace();
+						}
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						break;
+					}
 				}
 			}
-			catch(Exception e) {
-				try {
-					ss.close();
-				} catch (IOException e1) {
-					System.out.println("Error in closing serversocket.");
-					e1.printStackTrace();
-				}
-				try {
-					cs.close();
-				} catch (IOException e1) {
-					System.out.println("Error in closing client socket.");
-					e1.printStackTrace();
-				}
-				e.printStackTrace();
-			}
-		}
-		
+		};
+		t8 = new Thread(r);
+		t8.start();
 	}
 	
 	/*
-	 Prohibited Hotkeys in Lock Mode:
-	 
-	 Win + L = Windows Lock Screen
-	 Alt + F4 = Exit Application/Shutdown
-	 Ctrl + Shift + Esc = Open Task Manager
-	 Ctrl + Alt + Del = Open Admin Functions
-	 Win + R = Run command
-	 
+		 Prohibited Hotkeys in Lock Mode:
+		 
+		 Win + L = Windows Lock Screen
+		 Alt + F4 = Exit Application/Shutdown
+		 Alt + Tab = Change application view
+		 Win + R = Run command
 	*/
 }

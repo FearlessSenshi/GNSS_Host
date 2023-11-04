@@ -351,6 +351,7 @@ public class MainApp extends JFrame {
 		
 		uniquePasscodeInput = new JTextField();
 		uniquePasscodeInput.setBounds(634, 395, 416, 37);
+		uniquePasscodeInput.setColumns(10);
 		recoveryPanel.add(uniquePasscodeInput);
 		
 		cancelRecoveryBtn = new JButton("CANCEL");
