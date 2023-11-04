@@ -34,7 +34,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO LEGION ;)
-//		DT  : 11-04-2023 2348
+//		DT  : 11-05-2023 0208
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -48,6 +48,7 @@ public class Functions implements Runnable{
 	public ServerSocket ssCon;
 	public Socket sCon;
 	public InputStream isCon;
+	public OutputStream outCon;
 	public BufferedReader brCon;
 	
 	public int hostPasscode;
@@ -62,7 +63,7 @@ public class Functions implements Runnable{
 	public Robot rt;
 	
 	public boolean connectedToNetwork = false;
-	public boolean retryingConnection = false;
+	public boolean retryConnection = false;
 	
 	// Client Variables
 	public String clientIP;
@@ -476,7 +477,7 @@ public class Functions implements Runnable{
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			gui.inputStatusLbl.setVisible(false);
-			gui.w.setVisible(true);
+			//gui.w.setVisible(true);
 			gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
@@ -596,6 +597,9 @@ public class Functions implements Runnable{
 
 					isCon = sCon.getInputStream();
 					brCon = new BufferedReader(new InputStreamReader(isCon));
+					
+					String heartbeatMessage = "HEARTBEAT";
+					outCon = sCon.getOutputStream();
 
 					byte[] buffer = new byte[1024];
 					int bytesRead;
@@ -603,6 +607,7 @@ public class Functions implements Runnable{
 					String line;
 
 					while (true) {
+						
 						if (t6.isInterrupted()) {
 							sCon.close();
 							ssCon.close();
@@ -613,9 +618,12 @@ public class Functions implements Runnable{
 						else if ((bytesRead = isCon.read(buffer)) != -1) {
 							String message = new String(buffer, 0, bytesRead);
 							if (message.equals("HEARTBEAT")) {
-								System.out.println("Received heartbeat from client: " + sCon.getInetAddress());
+								System.out.println("Received heartbeat from client: " + sCon.getInetAddress().toString().replace('/', '\s'));
+								outCon.write(heartbeatMessage.getBytes());
+								outCon.flush();
 							}
-						} else
+						}
+						else
 							break;
 					}
 
@@ -629,7 +637,8 @@ public class Functions implements Runnable{
 						brCon.close();
 						indirectDc();
 						lockPC();
-						createNewConnection();
+						if(!retryConnection)
+							createNewConnection();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
@@ -659,15 +668,29 @@ public class Functions implements Runnable{
 						}
 						if (connectedToNetwork) {
 							System.out.println("Connected to a network.");
-							if(t6.isAlive()) {
-								System.out.println("Device connection checker is alive!");
-							}
-							else {
-								System.out.println("Device connection checker is DEAD!");
+							if(retryConnection) {
+								retryConnection = false;
 							}
 						} 
 						else {
 							System.out.println("Not connected to a network...");
+							if(!retryConnection) {
+								if(t6.isAlive()) {
+									t6.interrupt();
+									sCon.close();
+									ssCon.close();
+									isCon.close();
+									brCon.close();
+									indirectDc();
+									lockPC();
+									retryConnection = true;
+								}
+								else if(!t6.isAlive()) {
+									indirectDc();
+									lockPC();
+									retryConnection = true;
+								}
+							}
 						}
 					} catch (SocketException e) {
 						e.printStackTrace();
@@ -704,7 +727,8 @@ public class Functions implements Runnable{
 		clientVerified = false;
 		t6.interrupt(); // chkDeviceConnection
 		t7.interrupt(); // chkNetworkConnection
-		
+		if(t8.isAlive())
+			t8.interrupt();
 		unlockPC();
 		
 		cs.close();
