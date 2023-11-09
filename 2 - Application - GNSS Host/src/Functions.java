@@ -192,7 +192,13 @@ public class Functions implements Runnable{
 				if(clkCnt == 20) {
 					gui.w.dispose();
 					gui.dispose();
-					//JOptionPane.showMessageDialog(null, "APPLICATION FORCE CLOSED!", "KILLSWITCH", JOptionPane.INFORMATION_MESSAGE);
+					if(!unlocked) {
+						try {
+							p = openExp.start();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
 					System.exit(0);
 				}
 			}
@@ -345,12 +351,12 @@ public class Functions implements Runnable{
 	}
 	
 	// Opens a panel for CREATING a Host Connection
-		void showAuthPanel() {
-			gui.cardLayout.show(gui.container, "authPanel");
-			gui.clientConnectStatus.setText("Status: Waiting for client connection...");
-			gui.hostIPLabel.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
-			gui.generatedPasscode.setText(String.valueOf(generatePasscode()));
-		}
+	void showAuthPanel() {
+		gui.cardLayout.show(gui.container, "authPanel");
+		gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+		gui.hostIPLabel.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
+		gui.generatedPasscode.setText(String.valueOf(generatePasscode()));
+	}
 	
 	// Gets this PC's private IP Address
 	void createHost() throws UnknownHostException {
@@ -618,7 +624,7 @@ public class Functions implements Runnable{
 						else if ((bytesRead = isCon.read(buffer)) != -1) {
 							String message = new String(buffer, 0, bytesRead);
 							if (message.equals("HEARTBEAT")) {
-								System.out.println("Received heartbeat from client: " + sCon.getInetAddress().toString().replace('/', '\s'));
+								//System.out.println("Received heartbeat from client: " + sCon.getInetAddress().toString().replace('/', '\s'));
 								outCon.write(heartbeatMessage.getBytes());
 								outCon.flush();
 							}
@@ -725,10 +731,13 @@ public class Functions implements Runnable{
 	private void disconnect() throws IOException {
 		System.out.println("[!] Disconnecting!");
 		clientVerified = false;
+		pw.println("disconnect");
 		t6.interrupt(); // chkDeviceConnection
 		t7.interrupt(); // chkNetworkConnection
-		if(t8.isAlive())
-			t8.interrupt();
+		if(t8 != null)
+			if(t8.isAlive())
+				t8.interrupt();
+		
 		unlockPC();
 		
 		cs.close();
