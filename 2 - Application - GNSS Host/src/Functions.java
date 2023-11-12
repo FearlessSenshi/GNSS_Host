@@ -33,8 +33,8 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 // Last committed by: 
-// 		Name: LENOVO LEGION ;)
-//		DT  : 11-05-2023 0208
+// 		Name: LENOVO IDEAPAD ;)
+//		DT  : 11-12-2023 1723
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -88,8 +88,8 @@ public class Functions implements Runnable{
 	// Constructor - Assigning buttons with functions
 	
 	public Functions() {
-		gui = new MainApp();
 		
+		gui = new MainApp();
 		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe");
 		openExp = new ProcessBuilder("explorer.exe");
 		
@@ -224,11 +224,13 @@ public class Functions implements Runnable{
 			}
 
 		});
-		
+
+		gui.w.setVisible(true);
 	}
 	
 	// MAIN - Runs the application from GUI
 	public static void main(String[] args) {
+		MainApp gui = new MainApp();
 		Functions f = new Functions();
 		f.gui.setVisible(true);
 	}
@@ -483,13 +485,13 @@ public class Functions implements Runnable{
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			gui.inputStatusLbl.setVisible(false);
-			//gui.w.setVisible(true);
+			gui.w.setVisible(true);
 			gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
 			
 			// 1. Disable explorer.exe (exec once)
-			//p = exitExp.start();
+			p = exitExp.start();
 			
 			// 2. Disable selected hotkeys (loop exec)
 			disableAltKey();
@@ -515,7 +517,7 @@ public class Functions implements Runnable{
 			// (Deactivate all security measures)
 			
 			// 1. Enable explorer.exe
-			//p = openExp.start();
+			p = openExp.start();
 			
 			// 2. Enable hotkeys
 			t5.interrupt();

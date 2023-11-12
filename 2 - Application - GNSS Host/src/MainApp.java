@@ -2,6 +2,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.border.EmptyBorder;
 import java.awt.FlowLayout;
@@ -14,6 +15,8 @@ import java.awt.Font;
 import java.awt.Toolkit;
 
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import java.awt.Dimension;
 import javax.swing.JButton;
 import java.awt.CardLayout;
@@ -66,7 +69,7 @@ public class MainApp extends JFrame {
 	public CardLayout lsCardLayout;
 	public Container lsContainer;
 	
-	public JWindow w;
+	public JFrame w;
 	
 	public JPanel lockPanel;
 	public JPanel recoveryPanel;
@@ -304,10 +307,9 @@ public class MainApp extends JFrame {
 		btnCancel.setBounds(308, 346, 158, 57);
 		connectToHostPanel.add(btnCancel);
 		
-		
-		
-		w = new JWindow();
+		w = new JFrame();
 		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
+		w.setUndecorated(true);
 		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
 		w.setLocationRelativeTo(null);
 		
