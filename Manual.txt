@@ -1,0 +1,13 @@
+How to use the application by John Christian R. Makalintal 11122023@2214
+
+PC
+1.make sure you install the latest jdk
+2.always run the host application as administrator
+
+Android
+1. android os version must be at least 5.0 or higher
+
+NOTE (must read!)
+
+-There's a killswitch in the application when it locks your pc, and there's some cases that the application might encounter some bugs that will leave your PC unusable.
+- In the recovery mode, Press the label "Enter unique passcode" 20 times, and the application will kill itself, disabling its security measures that runs continuously in the PC.

@@ -34,7 +34,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO IDEAPAD ;)
-//		DT  : 11-12-2023 1723
+//		DT  : 01-18-2024 1922
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -130,10 +130,21 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		gui.btnHotspot.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.cardLayout.show(gui.container, "connectToHostPanel");
+				gui.repaint();
+			}
+			
+		});
+		
 		gui.btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.cardLayout.show(gui.container, "hostPanel");
+				gui.repaint();
 			}
 			
 		});
@@ -225,7 +236,6 @@ public class Functions implements Runnable{
 
 		});
 
-		gui.w.setVisible(true);
 	}
 	
 	// MAIN - Runs the application from GUI
@@ -278,7 +288,8 @@ public class Functions implements Runnable{
 								if (output.equals("connectVerify" + hostPasscode)) {
 									System.out.println("Client Verified!");
 									gui.cardLayout.show(gui.container, "connectStatusPanel");
-									gui.hostIPHostName.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
+									gui.repaint();
+									gui.hostIPHostName.setText(hostIP + " - " + hostName);
 									pw.println("gnssVerified" + hostPasscode);
 									clientVerified = true;
 
@@ -356,7 +367,9 @@ public class Functions implements Runnable{
 	void showAuthPanel() {
 		gui.cardLayout.show(gui.container, "authPanel");
 		gui.clientConnectStatus.setText("Status: Waiting for client connection...");
-		gui.hostIPLabel.setText(hostIP + " - " + "Port: " + serverPort + " - " + hostName);
+		gui.hostnameLabel.setText(hostName);
+		gui.hostIPLabel.setText(hostIP);
+		gui.hostPortLbl.setText(Integer.toString(generatePort()));
 		gui.generatedPasscode.setText(String.valueOf(generatePasscode()));
 	}
 	
@@ -367,6 +380,7 @@ public class Functions implements Runnable{
 		hostName = inetAddress.getLocalHost().getHostName();
 		gui.clientConnectStatus.setText("Status: Waiting client connection...");
 		authFailed = false;
+		gui.repaint();
 		t1 = new Thread(this);
 		t1.start();
 	}
@@ -386,11 +400,12 @@ public class Functions implements Runnable{
 	// Opens a panel for JOINING a Host Connection
 	void connectToHost() {
 		gui.cardLayout.show(gui.container, "connectToHostPanel");
+		gui.repaint();
 	}
 	
 	// Generates a random port
 	private int generatePort() {
-		// return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
+		//return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
 		return 1;
 	}
 	
@@ -460,9 +475,9 @@ public class Functions implements Runnable{
 				unlockPC();
 				disconnect();
 			// Switch Security Mode
-			case "toggleControlMode":
-				setControlMode();
-				break;
+//			case "toggleControlMode":
+//				setControlMode();
+//				break;
 			// Host Direct Disconnection
 			case "disconnect":
 				disconnect();
@@ -481,7 +496,6 @@ public class Functions implements Runnable{
 		if(unlocked) {
 			unlocked = false;
 			System.out.println("[!] Locking PC!");
-			gui.securityStatusLabel.setText("Security Status: Locked");
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			gui.inputStatusLbl.setVisible(false);
@@ -511,7 +525,6 @@ public class Functions implements Runnable{
 		if(!unlocked) {
 			unlocked = true;
 			System.out.println("[!] Unlocking PC!");
-			gui.securityStatusLabel.setText("Security Status: Unlocked");
 			gui.w.setVisible(false);
 			
 			// (Deactivate all security measures)
@@ -538,11 +551,9 @@ public class Functions implements Runnable{
 		System.out.println("[!] Control mode set!");
 		if(!autoControl) {
 			autoControl = true;
-			gui.controlModeLabel.setText("Control Mode: Automatic");
 		}
 		else {
 			autoControl = false;
-			gui.controlModeLabel.setText("Control Mode: Manual");
 		}
 	}
 	
@@ -749,6 +760,7 @@ public class Functions implements Runnable{
 		br.close();
 		pw.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
+		gui.repaint();
 	}
 	
 	// Cancels the host connection
@@ -756,6 +768,7 @@ public class Functions implements Runnable{
 		System.out.println("[!] Disconnecting!");
 		ss.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
+		gui.repaint();
 	}
 	
 	// Creates new connection - creates a new connection for the verified client to connect
