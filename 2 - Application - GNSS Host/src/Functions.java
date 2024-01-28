@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -34,7 +35,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO IDEAPAD ;)
-//		DT  : 01-18-2024 1922
+//		DT  : 01-28-2024 1852
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -43,7 +44,7 @@ public class Functions implements Runnable{
 	// Host Variables
 	public ServerSocket ss;
 	public Socket cs;
-	public int serverPort;
+	public int serverPort = 1;
 	
 	public ServerSocket ssCon;
 	public Socket sCon;
@@ -54,8 +55,8 @@ public class Functions implements Runnable{
 	public int hostPasscode;
 	public String hostIP;
 	public String hostName;
-	public final int MIN_PORT_RANGE = 1;
-	public final int MAX_PORT_RANGE = 65536;
+	public final int MIN_PORT_RANGE = 49152;
+	public final int MAX_PORT_RANGE = 65535;
 	public boolean unlocked = true;
 	public boolean autoControl = false;
 	public boolean stopNetChk = false;
@@ -71,6 +72,11 @@ public class Functions implements Runnable{
 	public boolean clientVerified = false;
 	private int attempts = 3;
 	
+	// HOTSPOT - Client Variables
+	public String hotspotIP;
+	public int hotspotPasscode;
+	public int connectivity = 0; // (0) no session/default, (1) wifi, (2) hotspot
+	
 	// Get Output
 	private InputStream is;
 	private BufferedReader br;
@@ -83,10 +89,10 @@ public class Functions implements Runnable{
 	private Process p;
 	private ProcessBuilder exitExp,openExp,createTask,removeTask,killMgr;
 	
+	// KS
 	public int clkCnt = 0;
 	
 	// Constructor - Assigning buttons with functions
-	
 	public Functions() {
 		
 		gui = new MainApp();
@@ -103,7 +109,7 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					createHost();
-					
+					connectivity = 1;
 				} catch (UnknownHostException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -112,37 +118,27 @@ public class Functions implements Runnable{
 			}
 		});
 		
-//		gui.createBtn2.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				connectToHost();
-//			}
-//		});
-		
 		gui.connectHostBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				String ip = gui.ipTextInput.getText();
-				int port = Integer.parseInt(gui.portInput.getText());
-				int passcode = Integer.parseInt(gui.passcodeInput.getText());
-				joinHost(ip, port, passcode);
+				joinHost();
 			}
 		});
 		
 		gui.btnHotspot.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				connectivity = 2;
 				gui.cardLayout.show(gui.container, "connectToHostPanel");
 				gui.repaint();
+				System.out.println(getDefaultGateway());
 			}
-			
 		});
 		
 		gui.btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				connectivity = 0;
 				gui.cardLayout.show(gui.container, "hostPanel");
 				gui.repaint();
 			}
@@ -154,6 +150,7 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				if(clientVerified) {
 					try {
+						connectivity = 0;
 						disconnect();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -170,6 +167,7 @@ public class Functions implements Runnable{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
+					connectivity = 0;
 					cancelHostConnection();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -247,120 +245,192 @@ public class Functions implements Runnable{
 	
 	@Override // This is the main thread
 	public void run() {
-		
-		// AUTHENTICATION - When authentication between host and client didn't fail, continue
-		while(!authFailed) {
-			try {
-				
-				// Creates a host connection session if the client is NOT verified by the PC
-				if(!clientVerified) {
-					attempts = 3;
-					clientVerified = false;
-					serverPort = generatePort();
+		if(connectivity == 1) {
+			// AUTHENTICATION - When authentication between host and client didn't fail, continue
+			while(!authFailed) {
+				try {
 					
-					// Establish a ServerSocket connection
-			        while(true) {
-						ss = new ServerSocket(serverPort);
-						System.out.println("Waiting for client connection...");
-						gui.clientConnectStatus.setText("Status: Waiting for client connection...");
-				        cs = ss.accept();
-				        if(cs.isConnected()) {
-				        	is = cs.getInputStream();
-				    		br = new BufferedReader(new InputStreamReader(is));
-				    		out = cs.getOutputStream();
-				    		pw = new PrintWriter(out,true);
-				    		
-				        }
-			        	// Get Passcode
-			    		String output = "";
-			    		String senderAddress;
-			    		try {
-			    			
-							// Check if client is connected
-							if (cs.isConnected()) {
-								gui.clientConnectStatus.setText("Status: Awaiting client verification...");
-								
-								// Waits the client's response for the passcode
-								output = br.readLine();
-								System.out.println(output);
-								
-								// Verifies client connection and opens access control
-								if (output.equals("connectVerify" + hostPasscode)) {
-									System.out.println("Client Verified!");
-									gui.cardLayout.show(gui.container, "connectStatusPanel");
-									gui.repaint();
-									gui.hostIPHostName.setText(hostIP + " - " + hostName);
-									pw.println("gnssVerified" + hostPasscode);
-									clientVerified = true;
-
-									InetAddress ia = cs.getInetAddress();
-									System.out.println("Client Local IP Address: " + ia.getHostAddress());
-									runInputListener(br);
-									chkNetworkConnection();
-									chkDeviceConnection();
-									break;
-								} 
-								
-								// When client inputs wrong passcode, decrease attempt by -1
-								else {
-									System.out.println("Incorrect Passcode! ");
-									if(attempts > 0) {
-										// Sends out an input saying that the given passcode was incorrect
-										pw.println("incorrectPasscode");
-										if(cs.isConnected()) System.out.println("Client is still connected.");
-										attempts--;
-										cs.close();
-										ss.close();
-										is.close();
-										out.close();
-										pw.close();
-										br.close();
-										System.out.println(attempts);
-								}
+					// Creates a host connection session if the client is NOT verified by the PC
+					if(!clientVerified) {
+						attempts = 3;
+						clientVerified = false;
+						//serverPort = generatePort();
+						
+						// Establish a ServerSocket connection
+				        while(true) {
+							ss = new ServerSocket(serverPort);
+							System.out.println(ss.getLocalPort());
+							System.out.println("Waiting for client connection...");
+							gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+					        cs = ss.accept();
+					        if(cs.isConnected()) {
+					        	is = cs.getInputStream();
+					    		br = new BufferedReader(new InputStreamReader(is));
+					    		out = cs.getOutputStream();
+					    		pw = new PrintWriter(out,true);
+					    		
+					        }
+				        	// Get Passcode
+				    		String output = "";
+				    		String senderAddress;
+				    		try {
+				    			
+								// Check if client is connected
+								if (cs.isConnected()) {
+									gui.clientConnectStatus.setText("Status: Awaiting client verification...");
 									
-								// Disconnect connecting client if attempt ran out to 0
-								else {
-										pw.println("accessDenied");
-										cs.close();
-										ss.close();
-										is.close();
-										out.close();
-										pw.close();
-										br.close();
-										
-										// Shows the home panel
-										gui.cardLayout.show(gui.container, "hostPanel");
-										authFailed = true;
+									// Waits the client's response for the passcode
+									output = br.readLine();
+									System.out.println(output);
+									
+									// Verifies client connection and opens access control
+									if (output.equals("connectVerify" + hostPasscode)) {
+										System.out.println("Client Verified!");
+										gui.cardLayout.show(gui.container, "connectStatusPanel");
+										gui.repaint();
+										gui.hostIPHostName.setText(hostIP + " - " + hostName);
+										pw.println("gnssVerified" + hostPasscode);
+										clientVerified = true;
+
+										InetAddress ia = cs.getInetAddress();
+										System.out.println("Client Local IP Address: " + ia.getHostAddress());
+										runInputListener(br);
+										chkNetworkConnection();
+										chkDeviceConnection();
 										break;
+									} 
+									
+									// When client inputs wrong passcode, decrease attempt by -1
+									else {
+										System.out.println("Incorrect Passcode! ");
+										if(attempts > 0) {
+											// Sends out an input saying that the given passcode was incorrect
+											pw.println("incorrectPasscode");
+											if(cs.isConnected()) System.out.println("Client is still connected.");
+											attempts--;
+											cs.close();
+											ss.close();
+											is.close();
+											out.close();
+											pw.close();
+											br.close();
+											System.out.println(attempts);
+									}
+										
+									// Disconnect connecting client if attempt ran out to 0
+									else {
+											pw.println("accessDenied");
+											cs.close();
+											ss.close();
+											is.close();
+											out.close();
+											pw.close();
+											br.close();
+											
+											// Shows the home panel
+											gui.cardLayout.show(gui.container, "hostPanel");
+											authFailed = true;
+											break;
+									}
 								}
 							}
-						}
-							
-							// if client is not connected...
-							else {
-								runOutputSender(pw, "gnssHostDisconnected");
+								
+								// if client is not connected...
+								else {
+									runOutputSender(pw, "gnssHostDisconnected");
+								}
 							}
-						}
-			    		
-			    		// Disconnect the socket and all streams
-						catch (IOException e) {
-							e.printStackTrace();
-							cs.close();
-							ss.close();
-							is.close();
-							out.close();
-							br.close();
-							pw.close();
-							break;
-						}
-			        }
+				    		
+				    		// Disconnect the socket and all streams
+							catch (IOException e) {
+								e.printStackTrace();
+								cs.close();
+								ss.close();
+								is.close();
+								out.close();
+								br.close();
+								pw.close();
+								break;
+							}
+				        }
+					}
+					
+				} catch(Exception e) {
+					e.printStackTrace();
+					break;
 				}
-				
-			} catch(Exception e) {
-				e.printStackTrace();
-				break;
 			}
 		}
+		else if(connectivity == 2) {
+			try {
+				hotspotPasscode = Integer.parseInt(gui.passcodeInput.getText());
+				cs = new Socket(getDefaultGateway(), 45451);
+				System.out.println("Connected!");
+				pw = new PrintWriter(cs.getOutputStream(), true);
+	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+	            System.out.println("connectVerifyFromHotspot" + hotspotPasscode);
+	            pw.println("connectVerifyFromHotspot" + hotspotPasscode);
+	            while (true) {
+                    if (cs.isConnected()) {
+                        String message = br.readLine();
+                        System.out.println(message);
+                        if(message!=null){
+                            if (message.equals("incorrectPasscode")) {
+                                System.out.println("Connected but incorrect passcode.");
+                                cs.close();
+                                pw.close();
+                                br.close();
+                            } else if (message.equals("accessDenied")) {
+                                System.out.println("Attempts ran out. Disconnected from session.");
+                                cs.close();
+                                pw.close();
+                                br.close();
+                                break;
+                            } else if (message.equals("gnssVerified"+hotspotPasscode)) {
+                                System.out.println("Successful Connection");
+                                clientVerified = true;
+                                gui.cardLayout.show(gui.container, "connectStatusPanel");
+								gui.repaint();
+								gui.hostIPHostName.setText(hostIP + " - " + hostName);
+								cs.close();
+                                pw.close();
+                                br.close();
+                                try {
+									Thread.sleep(3000);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+                                cs = new Socket(getDefaultGateway(), 45451);
+                				System.out.println("Connected! Again!");
+                				pw = new PrintWriter(cs.getOutputStream(), true);
+                	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+                                runInputListener(br);
+								//chkNetworkConnection();
+								//chkDeviceConnection();
+                                break;
+                            }
+                        }
+
+                        // Detects if the client socket connection disconnects to the server.
+                        else{
+                            System.out.println("Server disconnected!");
+                            System.out.println("Client/Server disconnected!");
+                            break;
+                        }
+
+                    } else {
+                        System.out.println("Socket isn't connected.");
+                    }
+                }
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
 	}
 	
 	// Opens a panel for CREATING a Host Connection
@@ -369,7 +439,7 @@ public class Functions implements Runnable{
 		gui.clientConnectStatus.setText("Status: Waiting for client connection...");
 		gui.hostnameLabel.setText(hostName);
 		gui.hostIPLabel.setText(hostIP);
-		gui.hostPortLbl.setText(Integer.toString(generatePort()));
+		gui.hostPortLbl.setText(Integer.toString(serverPort));
 		gui.generatedPasscode.setText(String.valueOf(generatePasscode()));
 	}
 	
@@ -381,21 +451,45 @@ public class Functions implements Runnable{
 		gui.clientConnectStatus.setText("Status: Waiting client connection...");
 		authFailed = false;
 		gui.repaint();
-		t1 = new Thread(this);
+		t1 = new Thread(this); // runs the runnable thread
 		t1.start();
 	}
 	
 	// Creates a Socket Connection in this PC
-		void joinHost(String ip, int port, int passcode) {
-			try {
-				System.out.println("Connecting to hotspot...");
-				Socket s = new Socket(ip,port);
-				System.out.println("Connected!");
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	void joinHost() {
+		try {
+			System.out.println("Connecting to hotspot...");
+			t1 = new Thread(this);
+			t1.start();
+			//Socket s = new Socket(getDefaultGateway(), 1);
+			//System.out.println("Connected!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+	}
+	
+	private String getDefaultGateway() {
+		String defaultGateway = "";
+		try {
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "ipconfig | findstr /i \"Default Gateway\"");
+            Process process = processBuilder.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                defaultGateway = line.split(":")[1].trim();
+            }
+
+            process.waitFor();
+            reader.close();
+            
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+		return defaultGateway;
+		
+	}
 	
 	// Opens a panel for JOINING a Host Connection
 	void connectToHost() {
@@ -405,8 +499,7 @@ public class Functions implements Runnable{
 	
 	// Generates a random port
 	private int generatePort() {
-		//return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
-		return 1;
+		return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
 	}
 	
 	// Generates a random passcode
@@ -423,6 +516,7 @@ public class Functions implements Runnable{
 			public void run() {
 				while(true) {
 					try {
+						System.out.println("Running in input function");
 						String output = br.readLine();
 						if(clientVerified) {
 							command(output);
@@ -499,13 +593,13 @@ public class Functions implements Runnable{
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			gui.inputStatusLbl.setVisible(false);
-			gui.w.setVisible(true);
-			gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
+			//gui.w.setVisible(true);
+			//gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
 			
 			// 1. Disable explorer.exe (exec once)
-			p = exitExp.start();
+			//p = exitExp.start();
 			
 			// 2. Disable selected hotkeys (loop exec)
 			disableAltKey();
@@ -530,7 +624,7 @@ public class Functions implements Runnable{
 			// (Deactivate all security measures)
 			
 			// 1. Enable explorer.exe
-			p = openExp.start();
+			//p = openExp.start();
 			
 			// 2. Enable hotkeys
 			t5.interrupt();
@@ -609,14 +703,20 @@ public class Functions implements Runnable{
 			@Override
 			public void run() {
 				try {
-					ssCon = new ServerSocket(11111);
-					System.out.println("Waiting for client connection for connection checker...");
-					sCon = ssCon.accept();
-					sCon.setSoTimeout(2000);
+					if(connectivity == 1) {
+						ssCon = new ServerSocket(11111);
+						System.out.println("Waiting for client connection for connection checker...");
+						sCon = ssCon.accept();
+						sCon.setSoTimeout(2000);
+					}
+					else if(connectivity == 2) {
+						sCon = new Socket("",1);
+						sCon.setSoTimeout(2000);
+					}
 
 					isCon = sCon.getInputStream();
 					brCon = new BufferedReader(new InputStreamReader(isCon));
-					
+
 					String heartbeatMessage = "HEARTBEAT";
 					outCon = sCon.getOutputStream();
 
@@ -626,23 +726,23 @@ public class Functions implements Runnable{
 					String line;
 
 					while (true) {
-						
+
 						if (t6.isInterrupted()) {
 							sCon.close();
-							ssCon.close();
+							if(connectivity == 1)
+								ssCon.close();
 							isCon.close();
 							brCon.close();
 							break;
-						}
-						else if ((bytesRead = isCon.read(buffer)) != -1) {
+						} else if ((bytesRead = isCon.read(buffer)) != -1) {
 							String message = new String(buffer, 0, bytesRead);
 							if (message.equals("HEARTBEAT")) {
-								//System.out.println("Received heartbeat from client: " + sCon.getInetAddress().toString().replace('/', '\s'));
+								// System.out.println("Received heartbeat from client: " +
+								// sCon.getInetAddress().toString().replace('/', '\s'));
 								outCon.write(heartbeatMessage.getBytes());
 								outCon.flush();
 							}
-						}
-						else
+						} else
 							break;
 					}
 
@@ -651,12 +751,13 @@ public class Functions implements Runnable{
 					e.printStackTrace();
 					try {
 						sCon.close();
-						ssCon.close();
+						if(connectivity == 1)
+							ssCon.close();
 						isCon.close();
 						brCon.close();
 						indirectDc();
 						lockPC();
-						if(!retryConnection)
+						if (!retryConnection)
 							createNewConnection();
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -733,7 +834,8 @@ public class Functions implements Runnable{
 	// Closes the socket connection when client disconnects without confirmation
 	private void indirectDc() throws IOException {
 		cs.close();
-		ss.close();
+		if(connectivity == 1)
+			ssCon.close();
 		is.close();
 		out.close();
 		br.close();
@@ -760,6 +862,7 @@ public class Functions implements Runnable{
 		br.close();
 		pw.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
+		t1.interrupt();
 		gui.repaint();
 	}
 	

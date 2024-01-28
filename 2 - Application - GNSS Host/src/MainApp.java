@@ -36,6 +36,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 
 public class MainApp extends JFrame {
 
@@ -59,8 +60,6 @@ public class MainApp extends JFrame {
 	
 	public JPanel connectToHostPanel;
 	public JButton createBtn2;
-	public JTextField ipTextInput;
-	public JTextField portInput;
 	public JTextField passcodeInput;
 	public JButton connectHostBtn;
 	public JButton btnCancel;
@@ -364,43 +363,32 @@ public class MainApp extends JFrame {
 		container.add(connectToHostPanel, "connectToHostPanel");
 		connectToHostPanel.setLayout(null);
 		
-		JLabel inputIPLabel = new JLabel("IP");
+		JLabel inputIPLabel = new JLabel("<HTML>Make sure you are connected to your mobile hotspot's network in order for this session to work.<HTML> ");
+		inputIPLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		inputIPLabel.setForeground(new Color(255, 255, 255));
-		inputIPLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
-		inputIPLabel.setBounds(130, 259, 128, 37);
+		inputIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		inputIPLabel.setBounds(153, 243, 285, 89);
 		connectToHostPanel.add(inputIPLabel);
-		
-		JLabel inputPortLabel = new JLabel("Port");
-		inputPortLabel.setForeground(new Color(255, 255, 255));
-		inputPortLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
-		inputPortLabel.setBounds(130, 307, 96, 25);
-		connectToHostPanel.add(inputPortLabel);
 		
 		JLabel inputPasscodeLabel = new JLabel("Passcode");
 		inputPasscodeLabel.setForeground(new Color(255, 255, 255));
 		inputPasscodeLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
-		inputPasscodeLabel.setBounds(130, 343, 128, 37);
+		inputPasscodeLabel.setBounds(139, 343, 103, 37);
 		connectToHostPanel.add(inputPasscodeLabel);
 		
 		JLabel connectToHostTitle = new JLabel("Enter Client Details");
 		connectToHostTitle.setForeground(new Color(255, 255, 255));
 		connectToHostTitle.setFont(new Font("Tahoma", Font.BOLD, 27));
-		connectToHostTitle.setBounds(130, 167, 308, 37);
+		connectToHostTitle.setBounds(157, 167, 308, 37);
 		connectToHostPanel.add(connectToHostTitle);
 		
-		ipTextInput = new JTextField();
-		ipTextInput.setBounds(276, 271, 189, 20);
-		connectToHostPanel.add(ipTextInput);
-		ipTextInput.setColumns(10);
-		
-		portInput = new JTextField();
-		portInput.setColumns(10);
-		portInput.setBounds(276, 313, 189, 20);
-		connectToHostPanel.add(portInput);
-		
 		passcodeInput = new JTextField();
+		passcodeInput.setCaretColor(new Color(255, 255, 255));
+		passcodeInput.setBorder(new LineBorder(new Color(171, 173, 179), 1, true));
+		passcodeInput.setBackground(new Color(15, 15, 15));
+		passcodeInput.setForeground(new Color(255, 255, 255));
 		passcodeInput.setColumns(10);
-		passcodeInput.setBounds(276, 355, 189, 20);
+		passcodeInput.setBounds(247, 343, 211, 37);
 		connectToHostPanel.add(passcodeInput);
 		
 		connectHostBtn = new JButton("CONNECT");
