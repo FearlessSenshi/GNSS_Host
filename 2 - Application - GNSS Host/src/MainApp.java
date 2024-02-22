@@ -37,6 +37,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
+import javax.swing.JList;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 
 public class MainApp extends JFrame {
 
@@ -48,6 +51,11 @@ public class MainApp extends JFrame {
 	public JLabel titleLabel;
 	public JLabel dialog1;
 	public JButton createBtn;
+	
+	public JFrame encSetupFrame;
+	public JPanel encryptionSetupPanel;
+	public JList filepathList;
+	public JButton addBtn,removeBtn,removeAllBtn,okBtn;
 	
 	public JPanel authPanel;
 	public JLabel titleLabel_1;
@@ -96,6 +104,7 @@ public class MainApp extends JFrame {
 	
 	public int mouseX,mouseY;
 	private JLabel connectedToLbl;
+	private JButton btnNewButton_1;
 	
 	/**
 	 * Create the frame.
@@ -193,7 +202,9 @@ public class MainApp extends JFrame {
 	    });
 	    
 	    titleBarPanel.add(customTitleBar);
-
+	    
+	    
+	    // Create Host Panel
 		createHostPanel = new JPanel();
 		createHostPanel.setBackground(new Color(15, 15, 15));
 		container.add(createHostPanel, "hostPanel");
@@ -239,7 +250,56 @@ public class MainApp extends JFrame {
 		btnHotspot.setBackground(new Color(0, 202, 0));
 		btnHotspot.setBounds(311, 329, 167, 53);
 		createHostPanel.add(btnHotspot);
-
+		
+		// Encryption Setup Panel
+		encSetupFrame = new JFrame();
+		encSetupFrame.setTitle("Encryption Setup");
+		encSetupFrame.setSize(700,400);
+		encSetupFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		encSetupFrame.setLocationRelativeTo(null);
+		
+		encryptionSetupPanel = new JPanel();
+		encryptionSetupPanel.setBackground(new Color(15, 15, 15));
+		encryptionSetupPanel.setLayout(null);
+		encSetupFrame.getContentPane().add(encryptionSetupPanel);
+		
+		JLabel lblClickTheAdd = new JLabel("Click the ADD button to add files to encrypt.");
+		lblClickTheAdd.setForeground(Color.WHITE);
+		lblClickTheAdd.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblClickTheAdd.setBounds(20, 11, 263, 23);
+		encryptionSetupPanel.add(lblClickTheAdd);
+		
+		ArrayList<String> data = new ArrayList<>();
+		
+		for(int i = 1; i <= 30; i++) {
+			data.add("Item" + i);
+		}
+		
+		filepathList = new JList(data.toArray());
+		filepathList.setLayout(new BorderLayout());
+		encryptionSetupPanel.add(filepathList);
+		
+		JScrollPane sc = new JScrollPane(filepathList);
+		sc.setBounds(20, 34, 642, 250);
+		encryptionSetupPanel.add(sc);
+		
+		addBtn = new JButton("ADD");
+		addBtn.setBounds(258, 306, 89, 23);
+		encryptionSetupPanel.add(addBtn);
+		
+		removeBtn = new JButton("REMOVE");
+		removeBtn.setBounds(357, 306, 89, 23);
+		encryptionSetupPanel.add(removeBtn);
+		
+		removeAllBtn = new JButton("REMOVE ALL");
+		removeAllBtn.setBounds(456, 306, 107, 23);
+		encryptionSetupPanel.add(removeAllBtn);
+		
+		okBtn = new JButton("OK");
+		okBtn.setBounds(573, 306, 89, 23);
+		encryptionSetupPanel.add(okBtn);
+		
+		// Authentication Panel
 		authPanel = new JPanel();
 		authPanel.setFocusable(false);
 		authPanel.setBackground(new Color(15, 15, 15));
@@ -322,7 +382,19 @@ public class MainApp extends JFrame {
 		hostIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		hostIPLabel.setBounds(181, 237, 318, 37);
 		authPanel.add(hostIPLabel);
-
+		
+		btnNewButton_1 = new JButton("encSetup");
+		btnNewButton_1.setBounds(28, 75, 89, 23);
+		btnNewButton_1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				encSetupFrame.setVisible(true);
+				repaint();
+			}
+		});
+		authPanel.add(btnNewButton_1);
+		
+		// Connection Status Panel
 		connectStatusPanel = new JPanel();
 		connectStatusPanel.setBackground(new Color(15, 15, 15));
 		container.add(connectStatusPanel, "connectStatusPanel");
@@ -407,6 +479,7 @@ public class MainApp extends JFrame {
 		btnCancel.setBounds(307, 420, 158, 57);
 		connectToHostPanel.add(btnCancel);
 		
+		// Lock Screen
 		w = new JFrame();
 		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
 		w.setUndecorated(true);

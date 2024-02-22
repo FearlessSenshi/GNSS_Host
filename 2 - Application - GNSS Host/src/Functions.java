@@ -34,8 +34,8 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 // Last committed by: 
-// 		Name: LENOVO IDEAPAD ;)
-//		DT  : 01-28-2024 1852 a
+// 		Name: SENSHIPC ;)
+//		DT  : 02-22-2024 2201
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -65,6 +65,7 @@ public class Functions implements Runnable{
 	
 	public boolean connectedToNetwork = false;
 	public boolean retryConnection = false;
+	public ArrayList<String> filepaths;
 	
 	// Client Variables
 	public String clientIP;
@@ -96,14 +97,15 @@ public class Functions implements Runnable{
 	public Functions() {
 		
 		gui = new MainApp();
-		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe");
-		openExp = new ProcessBuilder("explorer.exe");
+		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe"); // exits explorer.exe (file explorer and the taskbar)
+		openExp = new ProcessBuilder("explorer.exe"); // opens explorer.exe (file explorer and the taskbar)
 		
 		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", "<Directory to the app>", "/SC", "ONLOGON");
 		removeTask = new ProcessBuilder("schtasks", "/Delete", "/TN", "NetSecuritySystem", "/F");
 		
 		killMgr = new ProcessBuilder("taskkill", "/F", "/IM", "taskmgr.exe");
 		
+		// Home Buttons
 		gui.createBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -135,6 +137,7 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		// Authentication Buttons
 		gui.btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -145,6 +148,7 @@ public class Functions implements Runnable{
 			
 		});
 		
+		// Connection Status Buttons
 		gui.dcButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -177,6 +181,7 @@ public class Functions implements Runnable{
 			
 		});
 		
+		// Lock Screen Buttons and Textfields
 		gui.recoveryBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -192,6 +197,7 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		// KS Button
 		gui.enterPasscodeLbl.addMouseListener(new MouseListener() {
 
 			@Override
