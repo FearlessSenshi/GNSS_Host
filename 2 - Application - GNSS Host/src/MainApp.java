@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTextField;
@@ -55,7 +56,8 @@ public class MainApp extends JFrame {
 	public JFrame encSetupFrame;
 	public JPanel encryptionSetupPanel;
 	public JList filepathList;
-	public JButton addBtn,removeBtn,removeAllBtn,okBtn;
+	public JButton encSetupBtn,addBtn,removeBtn,removeAllBtn,okBtn;
+	public DefaultListModel<String> listModel;
 	
 	public JPanel authPanel;
 	public JLabel titleLabel_1;
@@ -104,7 +106,7 @@ public class MainApp extends JFrame {
 	
 	public int mouseX,mouseY;
 	private JLabel connectedToLbl;
-	private JButton btnNewButton_1;
+	
 	
 	/**
 	 * Create the frame.
@@ -269,13 +271,8 @@ public class MainApp extends JFrame {
 		lblClickTheAdd.setBounds(20, 11, 263, 23);
 		encryptionSetupPanel.add(lblClickTheAdd);
 		
-		ArrayList<String> data = new ArrayList<>();
-		
-		for(int i = 1; i <= 30; i++) {
-			data.add("Item" + i);
-		}
-		
-		filepathList = new JList(data.toArray());
+		listModel = new DefaultListModel<String>();
+		filepathList = new JList(listModel);
 		filepathList.setLayout(new BorderLayout());
 		encryptionSetupPanel.add(filepathList);
 		
@@ -383,16 +380,10 @@ public class MainApp extends JFrame {
 		hostIPLabel.setBounds(181, 237, 318, 37);
 		authPanel.add(hostIPLabel);
 		
-		btnNewButton_1 = new JButton("encSetup");
-		btnNewButton_1.setBounds(28, 75, 89, 23);
-		btnNewButton_1.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				encSetupFrame.setVisible(true);
-				repaint();
-			}
-		});
-		authPanel.add(btnNewButton_1);
+		encSetupBtn = new JButton("encSetup");
+		encSetupBtn.setBounds(28, 75, 89, 23);
+		
+		authPanel.add(encSetupBtn);
 		
 		// Connection Status Panel
 		connectStatusPanel = new JPanel();

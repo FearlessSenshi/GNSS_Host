@@ -11,6 +11,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,17 +33,29 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHIPC ;)
-//		DT  : 02-22-2024 2201
+//		DT  : 02-23-2024 1404
 
 public class Functions implements Runnable{
 	MainApp gui;
 	Thread t1,t2,t3,t4,t5,t6,t7,t8;
+	
+	// Window Variables
+	private static final int FRAME_WIDTH = 300;
+    private static final int FRAME_HEIGHT = 200;
+    private static final int FADE_DURATION = 100;
 	
 	// Host Variables
 	public ServerSocket ss;
@@ -65,7 +81,7 @@ public class Functions implements Runnable{
 	
 	public boolean connectedToNetwork = false;
 	public boolean retryConnection = false;
-	public ArrayList<String> filepaths;
+	public ArrayList<String> selectedFilepaths,loadedFilepaths;
 	
 	// Client Variables
 	public String clientIP;
@@ -181,6 +197,15 @@ public class Functions implements Runnable{
 			
 		});
 		
+		gui.encSetupBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.encSetupFrame.setVisible(true);
+				loadDirectories();
+				gui.repaint();
+			}
+		});
+		
 		// Lock Screen Buttons and Textfields
 		gui.recoveryBtn.addActionListener(new ActionListener() {
 			@Override
@@ -194,6 +219,42 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 				clkCnt = 0;
+			}
+		});
+		
+		// Encryption Setup Buttons
+		gui.addBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getDirectories();
+				addDirectories();
+			}
+			
+		});
+		
+		gui.removeBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.listModel.remove(gui.filepathList.getSelectedIndex());
+				updateSelectedDirectories();
+			}
+		});
+		
+		gui.removeAllBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.listModel.clear();
+				gui.repaint();
+				new File("directories.txt").delete();
+			}
+			
+		});
+		
+		gui.okBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.listModel.clear();
+				gui.encSetupFrame.dispose();
 			}
 		});
 		
@@ -247,6 +308,8 @@ public class Functions implements Runnable{
 		MainApp gui = new MainApp();
 		Functions f = new Functions();
 		f.gui.setVisible(true);
+		f.gui.setOpacity(0.0f);
+		fadeTransition(f.gui);
 	}
 	
 	@Override // This is the main thread
@@ -607,13 +670,16 @@ public class Functions implements Runnable{
 			// 1. Disable explorer.exe (exec once)
 			//p = exitExp.start();
 			
-			// 2. Disable selected hotkeys (loop exec)
+			// 2. Encrypt Files
+			//encrypt();
+			
+			// 3. Disable selected hotkeys (loop exec)
 			disableAltKey();
 			
-			// 3. Disable taskmgr when opened (loop exec !CAUTION!)
+			// 4. Disable taskmgr when opened (loop exec !CAUTION!)
 			disableTaskMgr();
 			
-			// 4. Enable application to open on startup (exec once)
+			// 5. Enable application to open on startup (exec once)
 		}
 		else {
 			System.out.println("Device is already locked!");
@@ -630,16 +696,19 @@ public class Functions implements Runnable{
 			// (Deactivate all security measures)
 			
 			// 1. Enable explorer.exe
-			//p = openExp.start();
+				//p = openExp.start();
 			
-			// 2. Enable hotkeys
+			// 2. Decrypt Files
+			//decrypt();
+			
+			// 3. Enable hotkeys
 			t5.interrupt();
 			
-			// 3. Enable taskmanager when opened
+			// 4. Enable taskmanager when opened
 			t4.interrupt();
 			System.out.println("Taskmanager killer has stopped.");
 			
-			// 4. Remove application to open on startup
+			// 5. Remove application to open on startup
 		}
 		else {
 			System.out.println("Device is already unlocked!");
@@ -732,9 +801,10 @@ public class Functions implements Runnable{
 					String line;
 
 					while (true) {
-
+						Thread.sleep(2000);
 						if (t6.isInterrupted()) {
 							sCon.close();
+							ssCon.close();
 							if(connectivity == 1)
 								ssCon.close();
 							isCon.close();
@@ -743,13 +813,19 @@ public class Functions implements Runnable{
 						} else if ((bytesRead = isCon.read(buffer)) != -1) {
 							String message = new String(buffer, 0, bytesRead);
 							if (message.equals("HEARTBEAT")) {
-								// System.out.println("Received heartbeat from client: " +
-								// sCon.getInetAddress().toString().replace('/', '\s'));
+								System.out.println("DUTUM");
 								outCon.write(heartbeatMessage.getBytes());
 								outCon.flush();
+								
 							}
-						} else
+						} else {
+							sCon.close();
+							ssCon.close();
+							isCon.close();
+							brCon.close();
+							outCon.close();
 							break;
+						}
 					}
 
 				} catch (IOException e) {
@@ -768,6 +844,19 @@ public class Functions implements Runnable{
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					try {
+						ssCon.close();
+						sCon.close();
+						isCon.close();
+						brCon.close();
+						outCon.close();
+					}catch(Exception e1) {
+						System.out.println(e);
+					}
+					System.out.println("[!] Interrupted!");
 				}
 			}
 		};
@@ -915,6 +1004,18 @@ public class Functions implements Runnable{
 						}
 						e.printStackTrace();
 					} catch (InterruptedException e) {
+						try {
+							cs.close();
+							ss.close();
+							is.close();
+							br.close();
+							out.close();
+							pw.close();
+							System.out.println("[T8] Closed.");
+						} catch (IOException e1) {
+							System.out.println("Can't close server and client socket");
+							e1.printStackTrace();
+						}
 						break;
 					}
 				}
@@ -922,6 +1023,241 @@ public class Functions implements Runnable{
 		};
 		t8 = new Thread(r);
 		t8.start();
+	}
+	
+	private void getDirectories() {
+		// Create a file chooser
+        JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        fileChooser.setDialogTitle("Choose directories");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setMultiSelectionEnabled(true);
+        selectedFilepaths = new ArrayList<>();
+        
+        // Show the file chooser dialog
+        int result = fileChooser.showOpenDialog(null);
+        
+        // Check if the user selected directories
+        if (result == JFileChooser.APPROVE_OPTION) {
+            // Get the selected directories
+            File[] selectedDirectories = fileChooser.getSelectedFiles();
+
+            // List files in each selected directory (including subdirectories) with full paths
+            for (File directory : selectedDirectories) {
+                System.out.println("Files in directory: " + directory.getAbsolutePath());
+                if(directory.isFile()) {
+                	System.out.println(directory.getAbsolutePath());
+                	saveDirectories(directory.getAbsolutePath().toString());
+                }
+                else
+                	listFiles(directory);
+                
+                System.out.println(); // Add a newline between directories
+            }
+        } else {
+            System.out.println("No directories selected.");
+        }
+	}
+	
+	private void saveDirectories(String filepath) {
+		try {
+			File dirFile = new File("directories.txt");
+			if(!dirFile.exists()) {
+				dirFile.createNewFile();
+			}
+    		Scanner fscan = new Scanner(new File("directories.txt"));
+    		String path = "";
+    		boolean exists = false;
+    		if(!fscan.hasNextLine()) {
+    			FileWriter fw = new FileWriter("directories.txt",true);
+    			selectedFilepaths.add(filepath);
+				fw.write(filepath + "\n");
+				fw.close();
+    		}
+    		else {
+    			while(fscan.hasNextLine()) {
+    				path = fscan.nextLine();
+        			if(filepath.equals(path)) {
+        				System.out.println("File has been already added.");
+        				exists = true;
+        				break;
+        			}
+        		}
+        		if(!exists) {
+    				FileWriter fw = new FileWriter("directories.txt",true);
+    				selectedFilepaths.add(filepath);
+    				fw.write(filepath + "\n");
+    				fw.close();
+    			}
+    		}
+    		fscan.close();
+		}
+		catch(Exception e) {
+			System.out.println("[SAVE DIR] ERROR " + e);
+			e.printStackTrace();
+		}
+	}
+	
+	private void listFiles(File directory) {
+		File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    // If the file is a directory, recursively list its files
+                    listFiles(file);
+                } else {
+                    // If the file is a regular file, print its full path
+                    System.out.println(file.getAbsolutePath());
+                    saveDirectories(file.getAbsolutePath().toString());
+                }
+            }
+        } else {
+            System.out.println("Error listing files in directory.");
+        }
+	}
+	
+	private void loadDirectories() {
+		File dirFile = new File("directories.txt");
+		if(dirFile.exists()) {
+			Scanner fscan = null;
+			try {
+				fscan = new Scanner(dirFile);
+				while(fscan.hasNextLine()) {
+					gui.listModel.addElement(fscan.nextLine());
+					gui.repaint();
+				}
+				fscan.close();
+			} 
+			catch (FileNotFoundException e) {
+				e.printStackTrace();
+				fscan.close();
+			}
+		}
+	}
+	
+	private void addDirectories() {
+		for(String s: selectedFilepaths) {
+			gui.listModel.addElement(s);
+		}
+		gui.repaint();
+	}
+	
+	private void updateSelectedDirectories() {
+		try {
+			File dirFile = new File("directories.txt");
+			dirFile.delete();
+			dirFile.createNewFile();
+			
+			FileWriter fw = new FileWriter(dirFile);
+			
+			int modelSize = gui.listModel.getSize();
+			
+			for(int i = 0; i < modelSize; i++) {
+				fw.write(gui.listModel.get(i) + "\n");
+			}
+			fw.close();
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+	
+	private void encrypt() {
+		try {
+			Encryptor en = new Encryptor();
+			String secretKey = generateKey();
+			
+			File encDir = new File("encFiles.txt");
+	        encDir.createNewFile();
+	        
+	        File keyFile = new File("encKey.txt");
+	        keyFile.createNewFile();
+	        
+	        PrintWriter pw = new PrintWriter(new FileOutputStream("encKey.txt"));
+	        pw.println(secretKey);
+	        pw.close();
+			
+			Scanner fscan = new Scanner(new File("directories.txt"));
+			loadedFilepaths = new ArrayList<>();
+			
+			while(fscan.hasNextLine()) {
+				loadedFilepaths.add(fscan.nextLine());
+			}
+			fscan.close();
+			
+			for(String s: loadedFilepaths) {
+				File f = new File(s);
+				en.encryptFile(s,f.getParent(),secretKey);
+			}
+				
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void decrypt() {
+		try {
+			Decryptor de = new Decryptor();
+			Scanner fscan = new Scanner(new File("encFiles.txt"));
+			loadedFilepaths = new ArrayList<>();
+			
+			while(fscan.hasNextLine()) {
+				loadedFilepaths.add(fscan.nextLine());
+			}
+			fscan.close();
+			fscan = new Scanner(new File("encKey.txt"));
+			String key = fscan.nextLine();
+			fscan.close();
+			for(String s: loadedFilepaths) {
+				File f = new File(s);
+				de.decryptFile(s,f.getParent(),key);
+			}
+		}
+		catch(Exception e) {
+			
+		}
+	}
+	
+	private String generateKey() {
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(16);
+
+        for (int i = 0; i < 16; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        return sb.toString();
+	}
+	
+	public static void fadeTransition(JFrame frame) {
+		final javax.swing.Timer[] timer = {null};
+
+        timer[0] = new javax.swing.Timer(10, new ActionListener() {
+            private long startTime = -1;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (startTime < 0) {
+                    startTime = System.currentTimeMillis();
+                }
+
+                long currentTime = System.currentTimeMillis();
+                long elapsedTime = currentTime - startTime;
+
+                if (elapsedTime < FADE_DURATION) {
+                    float opacity = (float) elapsedTime / FADE_DURATION;
+                    frame.setOpacity(opacity);
+                } else {
+                    frame.setOpacity(1.0f); // Ensure opacity is set to 1 at the end
+                    timer[0].stop();
+                }
+            }
+        });
+
+        timer[0].start();
 	}
 	
 	/*
