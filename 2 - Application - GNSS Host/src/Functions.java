@@ -680,6 +680,7 @@ public class Functions implements Runnable{
 			disableTaskMgr();
 			
 			// 5. Enable application to open on startup (exec once)
+			// p = createTask.start();
 		}
 		else {
 			System.out.println("Device is already locked!");
@@ -709,6 +710,7 @@ public class Functions implements Runnable{
 			System.out.println("Taskmanager killer has stopped.");
 			
 			// 5. Remove application to open on startup
+			// p = removeTask.start();
 		}
 		else {
 			System.out.println("Device is already unlocked!");
