@@ -81,6 +81,7 @@ public class Functions implements Runnable{
 	
 	public boolean connectedToNetwork = false;
 	public boolean retryConnection = false;
+	public boolean retryConnFromDiscon = false;
 	public ArrayList<String> selectedFilepaths,loadedFilepaths;
 	
 	// Client Variables
@@ -886,6 +887,8 @@ public class Functions implements Runnable{
 						if (connectedToNetwork) {
 							System.out.println("Connected to a network.");
 							if(retryConnection) {
+								System.out.println("Lol broh");
+								createNewConnection();
 								retryConnection = false;
 							}
 						} 
@@ -1027,6 +1030,12 @@ public class Functions implements Runnable{
 		t8.start();
 	}
 	
+	// Checks if the app has previous running session
+	private void chkSession() {
+		// When the app is opened and has a previous ongoing session, the security system will activate again.
+	}
+	
+	// Gets the directories to encrypt
 	private void getDirectories() {
 		// Create a file chooser
         JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -1060,6 +1069,7 @@ public class Functions implements Runnable{
         }
 	}
 	
+	// Saving the directories to a flatfile
 	private void saveDirectories(String filepath) {
 		try {
 			File dirFile = new File("directories.txt");
@@ -1099,6 +1109,7 @@ public class Functions implements Runnable{
 		}
 	}
 	
+	// Lists files in that given directory
 	private void listFiles(File directory) {
 		File[] files = directory.listFiles();
         if (files != null) {
@@ -1117,6 +1128,7 @@ public class Functions implements Runnable{
         }
 	}
 	
+	// Loads the directory flatfile to a list model
 	private void loadDirectories() {
 		File dirFile = new File("directories.txt");
 		if(dirFile.exists()) {
@@ -1136,6 +1148,7 @@ public class Functions implements Runnable{
 		}
 	}
 	
+	// Adds directory to the list model
 	private void addDirectories() {
 		for(String s: selectedFilepaths) {
 			gui.listModel.addElement(s);
@@ -1143,6 +1156,7 @@ public class Functions implements Runnable{
 		gui.repaint();
 	}
 	
+	// Updates the directory flatfile for any changes
 	private void updateSelectedDirectories() {
 		try {
 			File dirFile = new File("directories.txt");
@@ -1163,6 +1177,7 @@ public class Functions implements Runnable{
 		}
 	}
 	
+	// Encrypts the selected directories/files
 	private void encrypt() {
 		try {
 			Encryptor en = new Encryptor();
@@ -1198,6 +1213,7 @@ public class Functions implements Runnable{
 		
 	}
 	
+	// Decrypts the encrypted files
 	private void decrypt() {
 		try {
 			Decryptor de = new Decryptor();
@@ -1217,10 +1233,11 @@ public class Functions implements Runnable{
 			}
 		}
 		catch(Exception e) {
-			
+			System.out.println("[DECRYPT] CANNOT DECRYPT AT THIS MOMENT.");
 		}
 	}
 	
+	// Generates an 128bit alphanumerical key
 	private String generateKey() {
 		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new Random();
@@ -1234,6 +1251,7 @@ public class Functions implements Runnable{
         return sb.toString();
 	}
 	
+	// Adds fade in transition for the window when opening the app
 	public static void fadeTransition(JFrame frame) {
 		final javax.swing.Timer[] timer = {null};
 
