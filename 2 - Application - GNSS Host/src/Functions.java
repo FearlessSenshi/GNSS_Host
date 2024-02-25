@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -589,11 +590,14 @@ public class Functions implements Runnable{
 						System.out.println("Running in input function");
 						String output = br.readLine();
 						if(clientVerified) {
+							if(output == null)
+								System.out.println("[INPUT] Client Device disconnected!");
 							command(output);
 							System.out.println(output);
 						}
-					} catch (IOException e) {
+					} catch (Exception e) {
 						try {
+							e.printStackTrace();
 							br.close();
 							break;
 						} catch (Exception e1) {
@@ -833,7 +837,7 @@ public class Functions implements Runnable{
 
 				} catch (IOException e) {
 					System.out.println("Client disconnected!");
-					e.printStackTrace();
+					System.out.println("[1] " + e);
 					try {
 						sCon.close();
 						if(connectivity == 1)
@@ -845,7 +849,7 @@ public class Functions implements Runnable{
 						if (!retryConnection)
 							createNewConnection();
 					} catch (IOException e1) {
-						e1.printStackTrace();
+						System.out.println("[2] " + e);
 					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -887,7 +891,6 @@ public class Functions implements Runnable{
 						if (connectedToNetwork) {
 							System.out.println("Connected to a network.");
 							if(retryConnection) {
-								System.out.println("Lol broh");
 								createNewConnection();
 								retryConnection = false;
 							}
@@ -949,10 +952,10 @@ public class Functions implements Runnable{
 		pw.println("disconnect");
 		t6.interrupt(); // chkDeviceConnection
 		t7.interrupt(); // chkNetworkConnection
-		if(t8 != null)
+		if(t8 != null) {
 			if(t8.isAlive())
 				t8.interrupt();
-		
+		}
 		unlockPC();
 		
 		cs.close();
@@ -982,7 +985,10 @@ public class Functions implements Runnable{
 				while(true) {
 					try {
 						System.out.println("Retrying connection to client...");
-
+						if(ss.isBound()) {
+							ss.close();
+							cs.close();
+						}
 						ss = new ServerSocket(serverPort);
 						ss.setSoTimeout(5000);
 						cs = ss.accept();
@@ -1017,7 +1023,7 @@ public class Functions implements Runnable{
 							out.close();
 							pw.close();
 							System.out.println("[T8] Closed.");
-						} catch (IOException e1) {
+						} catch (Exception e1) {
 							System.out.println("Can't close server and client socket");
 							e1.printStackTrace();
 						}
