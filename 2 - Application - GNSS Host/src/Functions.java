@@ -47,7 +47,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHIPC ;)
-//		DT  : 02-23-2024 1404
+//		DT  : 02-27-2024 0407
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -72,6 +72,7 @@ public class Functions implements Runnable{
 	public int hostPasscode;
 	public String hostIP;
 	public String hostName;
+	public String hostDetails;
 	public final int MIN_PORT_RANGE = 49152;
 	public final int MAX_PORT_RANGE = 65535;
 	public boolean unlocked = true;
@@ -86,8 +87,10 @@ public class Functions implements Runnable{
 	public ArrayList<String> selectedFilepaths,loadedFilepaths;
 	
 	// Client Variables
+	public String clientID = "newConnection";
 	public String clientIP;
 	public String clientName;
+	public String clientAndHostRecord;
 	public boolean clientVerified = false;
 	private int attempts = 3;
 	
@@ -325,7 +328,7 @@ public class Functions implements Runnable{
 					if(!clientVerified) {
 						attempts = 3;
 						clientVerified = false;
-						//serverPort = generatePort();
+						serverPort = generatePort();
 						
 						// Establish a ServerSocket connection
 				        while(true) {
@@ -366,6 +369,7 @@ public class Functions implements Runnable{
 										InetAddress ia = cs.getInetAddress();
 										System.out.println("Client Local IP Address: " + ia.getHostAddress());
 										runInputListener(br);
+										createClientRecord();
 										chkNetworkConnection();
 										chkDeviceConnection();
 										break;
@@ -568,6 +572,110 @@ public class Functions implements Runnable{
 		gui.repaint();
 	}
 	
+	// Creates a new client record for new devices
+	void createClientRecord() {
+		File file = new File("deviceList.txt");
+		Scanner fs = null;
+		FileWriter fw = null;
+		String regID = "";
+		
+		// Check if file doesn't exist
+		if(!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				fw = new FileWriter(file);
+				fw.write(generateClientDeviceID() + "\n");
+				fw.close();
+			} catch (IOException e) {
+				try {
+					fw.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+			}finally {
+				try {
+					fw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		// Check if device is already registered
+		else if(file.exists()){
+			try {
+				fs = new Scanner(file);
+				boolean newClient = false;
+				// Scan all previous devices, do not register if already registered
+				while(fs.hasNextLine()) {
+					regID = fs.nextLine();
+					System.out.println(regID + " - " + clientID);
+					if(clientID.equals("newConnection")) {
+						newClient = true;
+						break;
+					}
+					if(regID.equals(clientID) == true){
+						newClient = false;
+						break;
+					}
+					else {
+						newClient = true;
+					}
+				}
+				fs.close();
+				// If new client has been found, register to device list
+				if(newClient == true) {
+					boolean taken = false;
+					try {
+						// Check if generated ID has been taken.
+						while(true) {
+							taken = false;
+							clientID = generateClientDeviceID();
+							fs = new Scanner(file);
+							while(fs.hasNextLine()) {
+								regID = fs.nextLine();
+								if(regID.equals(clientID)) {
+									System.out.println("[!] Rarest error. Generated name has been taken by another ID!");
+									taken = true;
+									fs.close();
+									break;
+								}
+							}
+							fs.close();
+							if(taken == false)
+								break;
+						}
+						fw = new FileWriter(file,true);
+						fw.write(clientID+ "\n");
+						fw.close();
+						System.out.println("Welcome! " + clientID);
+					} catch (IOException e) {
+						fs.close();
+						e.printStackTrace();
+					}finally {
+						try {
+							fw.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				else {
+					System.out.println("Device has already been registered!");
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} finally {
+				fs.close();
+			}
+		}
+	}
+	
 	// Generates a random port
 	private int generatePort() {
 		return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
@@ -577,6 +685,35 @@ public class Functions implements Runnable{
 	private int generatePasscode() {
 		hostPasscode = (int)(Math.random()*(100000-10000))+10000;
 		return hostPasscode;
+	}
+	
+	// Generates a random client ID
+	private String generateClientDeviceID() {
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(11);
+
+        for (int i = 0; i < 11; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        return sb.toString();
+	}
+	
+	// Generates a random host ID
+	private void generateHostDeviceDetails() {
+		// Generate ID
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(11);
+
+        for (int i = 0; i < 11; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+        
+        hostDetails = String.valueOf(hostIP) + "|" + String.valueOf(serverPort) + "|" + sb.toString();
 	}
 	
 	// Runs the InputListener (listens for incoming input)
@@ -649,6 +786,9 @@ public class Functions implements Runnable{
 			// Host Direct Disconnection
 			case "disconnect":
 				disconnect();
+				break;
+			case "newConnection":
+				createClientRecord();
 				break;
 			default:
 				System.out.println("[!] Unknown command.");
