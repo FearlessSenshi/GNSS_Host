@@ -39,6 +39,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -47,7 +48,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHIPC ;)
-//		DT  : 03-01-2024 0100
+//		DT  : 03-03-2024 2048
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -123,10 +124,17 @@ public class Functions implements Runnable{
 	public Functions() {
 		
 		gui = new MainApp();
+		
+		// Get the current working directory
+        String currentDirectory = System.getProperty("user.dir") + "\\NSS.exe";
+
+        // Print the current working directory
+        JOptionPane.showMessageDialog(null, currentDirectory);
+		
 		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe"); // exits explorer.exe (file explorer and the taskbar)
 		openExp = new ProcessBuilder("explorer.exe"); // opens explorer.exe (file explorer and the taskbar)
 		
-		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", "<Directory to the app>", "/SC", "ONLOGON");
+		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", appPath, "/SC", "ONLOGON");
 		removeTask = new ProcessBuilder("schtasks", "/Delete", "/TN", "NetSecuritySystem", "/F");
 		
 		killMgr = new ProcessBuilder("taskkill", "/F", "/IM", "taskmgr.exe");
@@ -849,6 +857,7 @@ public class Functions implements Runnable{
 			// 1. Disable explorer.exe (exec once)
 //			try {
 //				p = exitExp.start();
+//				p = createTask.start();
 //			} catch (IOException e) {
 //				e.printStackTrace();
 //			}
@@ -886,6 +895,7 @@ public class Functions implements Runnable{
 			// 1. Enable explorer.exe
 //			try {
 //				p = openExp.start();
+//				p = removeTask.start();
 //			} catch (IOException e) {
 //				e.printStackTrace();
 //			}
