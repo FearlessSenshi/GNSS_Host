@@ -35,7 +35,7 @@ import javax.swing.JOptionPane;
 
 // Last committed by: 
 // 		Name: LENOVO IDEAPAD ;)
-//		DT  : 01-28-2024 1852 a
+//		DT  : 01-28-2024 1852
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -406,8 +406,8 @@ public class Functions implements Runnable{
                 				pw = new PrintWriter(cs.getOutputStream(), true);
                 	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
                                 runInputListener(br);
-								//chkNetworkConnection();
-								//chkDeviceConnection();
+								chkNetworkConnection();
+								chkDeviceConnection();
                                 break;
                             }
                         }
@@ -710,8 +710,10 @@ public class Functions implements Runnable{
 						sCon.setSoTimeout(2000);
 					}
 					else if(connectivity == 2) {
-						sCon = new Socket("",1);
-						sCon.setSoTimeout(2000);
+						System.out.println("Waiting for client connection for connection checker...");
+						sCon = new Socket(getDefaultGateway(),54541);
+						System.out.println("Connected to Device Conn checker!");
+						//sCon.setSoTimeout(2000);
 					}
 
 					isCon = sCon.getInputStream();
@@ -796,7 +798,7 @@ public class Functions implements Runnable{
 							System.out.println("Not connected to a network...");
 							if(!retryConnection) {
 								if(t6.isAlive()) {
-									t6.interrupt();
+									t6.interrupt(); // interrupt network checker
 									sCon.close();
 									ssCon.close();
 									isCon.close();
@@ -834,10 +836,11 @@ public class Functions implements Runnable{
 	// Closes the socket connection when client disconnects without confirmation
 	private void indirectDc() throws IOException {
 		cs.close();
-		if(connectivity == 1)
+		if(connectivity == 1) {
 			ssCon.close();
-		is.close();
-		out.close();
+			is.close();
+			out.close();
+		}
 		br.close();
 		pw.close();
 	}
@@ -845,6 +848,8 @@ public class Functions implements Runnable{
 	// Closes the socket connection, therefore two devices will disconnect
 	private void disconnect() throws IOException {
 		System.out.println("[!] Disconnecting!");
+		gui.cardLayout.show(gui.container, "hostPanel");
+		gui.repaint();
 		clientVerified = false;
 		pw.println("disconnect");
 		t6.interrupt(); // chkDeviceConnection
@@ -856,14 +861,14 @@ public class Functions implements Runnable{
 		unlockPC();
 		
 		cs.close();
-		ss.close();
-		is.close();
-		out.close();
+		if(connectivity == 1) {
+			ss.close();
+			is.close();
+			out.close();
+		}
 		br.close();
 		pw.close();
-		gui.cardLayout.show(gui.container, "hostPanel");
 		t1.interrupt();
-		gui.repaint();
 	}
 	
 	// Cancels the host connection
@@ -882,27 +887,42 @@ public class Functions implements Runnable{
 				while(true) {
 					try {
 						System.out.println("Retrying connection to client...");
-
-						ss = new ServerSocket(serverPort);
-						ss.setSoTimeout(5000);
-						cs = ss.accept();
+						
+						if(connectivity == 1) {
+							ss = new ServerSocket(serverPort);
+							ss.setSoTimeout(5000);
+							cs = ss.accept();
+							is = cs.getInputStream();
+							br = new BufferedReader(new InputStreamReader(is));
+							out = cs.getOutputStream();
+							pw = new PrintWriter(out, true);
+						}
+						else if(connectivity == 2) {
+							cs = new Socket(getDefaultGateway(),45451);
+							//cs.setSoTimeout(1000);
+							br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+							pw = new PrintWriter(cs.getOutputStream(), true);
+						}
 						Thread.sleep(0);
-
-						is = cs.getInputStream();
-						br = new BufferedReader(new InputStreamReader(is));
-						out = cs.getOutputStream();
-						pw = new PrintWriter(out, true);
+						
 						if (cs.isConnected()) {
 							System.out.println("Server has connected to client successfully!");
 							unlockPC();
 							runInputListener(br);
 							chkDeviceConnection();
+							if(connectivity == 2) {
+								chkNetworkConnection();
+							}
 							break;
 						}
 					} catch (IOException e) {
 						try {
-							ss.close();
-							cs.close();
+							if(connectivity == 1) {
+								ss.close();
+								cs.close();
+							}
+							else if(connectivity == 2)
+								cs.close();
 						} catch (IOException e1) {
 							System.out.println("Error in closing serversocket.");
 							e1.printStackTrace();
