@@ -11,11 +11,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -29,18 +34,34 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: LENOVO IDEAPAD ;)
-//		DT  : 01-28-2024 1852
+//		DT  : 03-04-2024 1759
 
 public class Functions implements Runnable{
 	MainApp gui;
 	Thread t1,t2,t3,t4,t5,t6,t7,t8;
 	
+	// Window Variables
+	private static final int FRAME_WIDTH = 300;
+    private static final int FRAME_HEIGHT = 200;
+    private static final int FADE_DURATION = 100;
+	
+    // App Path
+    private String appPath;
+    
 	// Host Variables
 	public ServerSocket ss;
 	public Socket cs;
@@ -55,6 +76,8 @@ public class Functions implements Runnable{
 	public int hostPasscode;
 	public String hostIP;
 	public String hostName;
+	public String hostDetails;
+	public File hostIDFile;
 	public final int MIN_PORT_RANGE = 49152;
 	public final int MAX_PORT_RANGE = 65535;
 	public boolean unlocked = true;
@@ -65,10 +88,14 @@ public class Functions implements Runnable{
 	
 	public boolean connectedToNetwork = false;
 	public boolean retryConnection = false;
+	public boolean retryConnFromDiscon = false;
+	public ArrayList<String> selectedFilepaths,loadedFilepaths;
 	
 	// Client Variables
+	public String clientID;
 	public String clientIP;
 	public String clientName;
+	public String clientAndHostRecord;
 	public boolean clientVerified = false;
 	private int attempts = 3;
 	
@@ -80,6 +107,7 @@ public class Functions implements Runnable{
 	// Get Output
 	private InputStream is;
 	private BufferedReader br;
+	private String cID;
 	
 	// Send Input
 	private OutputStream out;
@@ -96,14 +124,22 @@ public class Functions implements Runnable{
 	public Functions() {
 		
 		gui = new MainApp();
-		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe");
-		openExp = new ProcessBuilder("explorer.exe");
 		
-		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", "<Directory to the app>", "/SC", "ONLOGON");
+		// Get the current working directory
+        String currentDirectory = System.getProperty("user.dir") + "\\NSS.exe";
+
+        // Print the current working directory
+        JOptionPane.showMessageDialog(null, currentDirectory);
+		
+		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe"); // exits explorer.exe (file explorer and the taskbar)
+		openExp = new ProcessBuilder("explorer.exe"); // opens explorer.exe (file explorer and the taskbar)
+		
+		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", appPath, "/SC", "ONLOGON");
 		removeTask = new ProcessBuilder("schtasks", "/Delete", "/TN", "NetSecuritySystem", "/F");
 		
 		killMgr = new ProcessBuilder("taskkill", "/F", "/IM", "taskmgr.exe");
 		
+		// Home Buttons
 		gui.createBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -135,6 +171,7 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		// Authentication Buttons
 		gui.btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -145,20 +182,16 @@ public class Functions implements Runnable{
 			
 		});
 		
+		// Connection Status Buttons
 		gui.dcButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(clientVerified) {
-					try {
-						connectivity = 0;
-						disconnect();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-				else {
-					System.out.println("[!] No access.");
+				try {
+					connectivity = 0;
+					disconnect();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 			}
 		});
@@ -177,6 +210,16 @@ public class Functions implements Runnable{
 			
 		});
 		
+		gui.encSetupBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.encSetupFrame.setVisible(true);
+				loadDirectories();
+				gui.repaint();
+			}
+		});
+		
+		// Lock Screen Buttons and Textfields
 		gui.recoveryBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -192,6 +235,43 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		// Encryption Setup Buttons
+		gui.addBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getDirectories();
+				addDirectories();
+			}
+			
+		});
+		
+		gui.removeBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.listModel.remove(gui.filepathList.getSelectedIndex());
+				updateSelectedDirectories();
+			}
+		});
+		
+		gui.removeAllBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.listModel.clear();
+				gui.repaint();
+				new File("directories.txt").delete();
+			}
+			
+		});
+		
+		gui.okBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.listModel.clear();
+				gui.encSetupFrame.dispose();
+			}
+		});
+		
+		// KS Button
 		gui.enterPasscodeLbl.addMouseListener(new MouseListener() {
 
 			@Override
@@ -233,6 +313,13 @@ public class Functions implements Runnable{
 			}
 
 		});
+		
+		if(chkSession()) {
+			gui.setVisible(true);
+			gui.cardLayout.show(gui.container, "connectStatusPanel");
+			gui.repaint();
+			reconnectToDevice();
+		}
 
 	}
 	
@@ -241,6 +328,8 @@ public class Functions implements Runnable{
 		MainApp gui = new MainApp();
 		Functions f = new Functions();
 		f.gui.setVisible(true);
+		//f.gui.setOpacity(0.0f);
+		//fadeTransition(f.gui);
 	}
 	
 	@Override // This is the main thread
@@ -254,7 +343,24 @@ public class Functions implements Runnable{
 					if(!clientVerified) {
 						attempts = 3;
 						clientVerified = false;
-						//serverPort = generatePort();
+						serverPort = generatePort();
+						clientID = generateClientDeviceID();
+						
+						if(chkHostID()) {
+							hostIDFile = new File("myID.txt");
+							Scanner fs = new Scanner(hostIDFile);
+							hostDetails = fs.nextLine();
+							fs.close();
+						}
+						else {
+							hostDetails = generateHostDeviceDetails("wifi");
+							File file = new File("myID.txt");
+							FileWriter fw = new FileWriter(file);
+							fw.write(hostDetails + "\n");
+							fw.close();
+						}
+						
+						System.out.println("gnssGenID|" + clientID + "|" + hostDetails);
 						
 						// Establish a ServerSocket connection
 				        while(true) {
@@ -291,7 +397,7 @@ public class Functions implements Runnable{
 										gui.hostIPHostName.setText(hostIP + " - " + hostName);
 										pw.println("gnssVerified" + hostPasscode);
 										clientVerified = true;
-
+										
 										InetAddress ia = cs.getInetAddress();
 										System.out.println("Client Local IP Address: " + ia.getHostAddress());
 										runInputListener(br);
@@ -497,16 +603,145 @@ public class Functions implements Runnable{
 		gui.repaint();
 	}
 	
-	// Generates a random port
-	private int generatePort() {
-		return (int)(Math.random()*(MAX_PORT_RANGE-MIN_PORT_RANGE))+MIN_PORT_RANGE;
+	// Creates a new client record for new devices
+	private void sendClientIDs() {
+		String clientID = this.clientID;
+		String hostDetails = this.hostDetails;
+		
+		pw.println("gnssGenID|" + clientID + "|" + hostDetails);
 	}
 	
+	private void createClientRecord(Boolean newConnection) {
+		File file = new File("deviceList.txt");
+		Scanner fs = null;
+		FileWriter fw = null;
+		String regID = "";
+
+		if(newConnection) {
+			try {
+				if(!file.exists()) {
+					file.createNewFile();
+					fw = new FileWriter(file,true);
+					fw.write(clientID + "\n");
+					fw.close();
+				}
+				else {
+					boolean insert = false;
+					fs = new Scanner(file);
+					while(fs.hasNextLine()) {
+						regID = fs.nextLine();
+						if(!regID.equals(clientID)) {
+							insert = true;
+						}
+					}
+					fs.close();
+					if(insert) {
+						fw = new FileWriter(file,true);
+						fw.write(clientID + "\n");
+						fw.close();
+					}
+					else {
+						clientID = generateClientDeviceID();
+						fw = new FileWriter(file,true);
+						fw.write(clientID + "\n");
+						fw.close();
+					}
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else if(!newConnection) {
+			try {
+				boolean exists = false;
+				fs = new Scanner(file);
+				while(fs.hasNextLine()) {
+					regID = fs.nextLine();
+					if(regID.equals(cID)) {
+						exists = true;
+						break;
+					}
+					else {
+						exists = false;
+					}
+				}
+				fs.close();
+				if(!exists) {
+					fw = new FileWriter(file,true);
+					fw.write(cID + "\n");
+					fw.close();
+				}
+				else {
+					System.out.println("Client Already Registered!");
+				}
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	// Generates a random client ID
+	private String generateClientDeviceID() {
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(11);
+        for (int i = 0; i < 11; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+        return sb.toString();
+	}
+	
+	// Generates a random host ID
+	private String generateHostDeviceDetails(String connectivity) {
+		// Generate ID
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(11);
+
+        for (int i = 0; i < 11; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+        
+        return "wifi|" + String.valueOf(hostIP) + "|" + String.valueOf(serverPort) + "|" + sb.toString();
+	}
+	
+	// Generates a random port
+	private int generatePort() {
+		return (int) (Math.random() * (MAX_PORT_RANGE - MIN_PORT_RANGE)) + MIN_PORT_RANGE;
+	}
+
 	// Generates a random passcode
 	private int generatePasscode() {
-		hostPasscode = (int)(Math.random()*(100000-10000))+10000;
+		hostPasscode = (int) (Math.random() * (100000 - 10000)) + 10000;
 		return hostPasscode;
 	}
+	
+	// Generates a recovery key
+	private String generateRecoveryKey() {
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(16);
+
+        for (int i = 0; i < 16; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+        return sb.toString();
+	}
+	
+	private boolean chkHostID() {
+		hostIDFile = new File("myID.txt");
+		boolean result = false;
+		if(hostIDFile.exists()) {
+			result = true;
+		}
+		return result;
+	}
+	
 	
 	// Runs the InputListener (listens for incoming input)
 	public void runInputListener(BufferedReader br) {
@@ -518,12 +753,21 @@ public class Functions implements Runnable{
 					try {
 						System.out.println("Running in input function");
 						String output = br.readLine();
+						if(br.ready()) {
+							System.out.println("ready!");
+						}
+						else {
+							System.out.println("not ready...");
+						}
 						if(clientVerified) {
+							if(output == null)
+								System.out.println("[INPUT] Client Device disconnected!");
 							command(output);
 							System.out.println(output);
 						}
-					} catch (IOException e) {
+					} catch (Exception e) {
 						try {
+							e.printStackTrace();
 							br.close();
 							break;
 						} catch (Exception e1) {
@@ -576,8 +820,20 @@ public class Functions implements Runnable{
 			case "disconnect":
 				disconnect();
 				break;
+			case "newConnection":
+				cID = "newConnection";
+				sendClientIDs();
+				createClientRecord(true);
+				break;
 			default:
-				System.out.println("[!] Unknown command.");
+				if(cmd.contains("gnssClientID")) {
+					System.out.println("Client has an ID! Checking existence.");
+					String[] data = cmd.split("\\|");
+					cID = data[1];
+					createClientRecord(false);
+				}
+				else
+					System.out.println("[!] Unknown command.");
 			}
 		}
 		else {
@@ -586,7 +842,7 @@ public class Functions implements Runnable{
 	}
 	
 	// Locks PC (activates all security measures and denies access to user in selected terms)
-	private void lockPC() throws IOException {
+	private void lockPC() {
 		if(unlocked) {
 			unlocked = false;
 			System.out.println("[!] Locking PC!");
@@ -599,15 +855,28 @@ public class Functions implements Runnable{
 			// (Activate all security measures)
 			
 			// 1. Disable explorer.exe (exec once)
-			//p = exitExp.start();
+//			try {
+//				p = exitExp.start();
+//				p = createTask.start();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 			
-			// 2. Disable selected hotkeys (loop exec)
+			// 2. Encrypt Files
+			//encrypt();
+			
+			// 3. Disable selected hotkeys (loop exec)
 			disableAltKey();
 			
-			// 3. Disable taskmgr when opened (loop exec !CAUTION!)
+			// 4. Disable taskmgr when opened (loop exec !CAUTION!)
 			disableTaskMgr();
 			
-			// 4. Enable application to open on startup (exec once)
+			// 5. Enable application to open on startup (exec once)
+//			try {
+//				p = createTask.start();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 		}
 		else {
 			System.out.println("Device is already locked!");
@@ -615,7 +884,7 @@ public class Functions implements Runnable{
 	}
 	
 	// Unlocks PC (removes all security measures and user gains access to its PC)
-	private void unlockPC() throws IOException {
+	private void unlockPC(){
 		if(!unlocked) {
 			unlocked = true;
 			System.out.println("[!] Unlocking PC!");
@@ -624,16 +893,29 @@ public class Functions implements Runnable{
 			// (Deactivate all security measures)
 			
 			// 1. Enable explorer.exe
-			//p = openExp.start();
+//			try {
+//				p = openExp.start();
+//				p = removeTask.start();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 			
-			// 2. Enable hotkeys
+			// 2. Decrypt Files
+			//decrypt();
+			
+			// 3. Enable hotkeys
 			t5.interrupt();
 			
-			// 3. Enable taskmanager when opened
+			// 4. Enable taskmanager when opened
 			t4.interrupt();
 			System.out.println("Taskmanager killer has stopped.");
 			
-			// 4. Remove application to open on startup
+			// 5. Remove application to open on startup
+//			try {
+//				p = removeTask.start();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 		}
 		else {
 			System.out.println("Device is already unlocked!");
@@ -715,7 +997,7 @@ public class Functions implements Runnable{
 						System.out.println("Connected to Device Conn checker!");
 						//sCon.setSoTimeout(2000);
 					}
-
+					
 					isCon = sCon.getInputStream();
 					brCon = new BufferedReader(new InputStreamReader(isCon));
 
@@ -726,11 +1008,13 @@ public class Functions implements Runnable{
 					int bytesRead;
 
 					String line;
+					String heartbeat = "-DUTUM";
 
 					while (true) {
-
+						Thread.sleep(2000);
 						if (t6.isInterrupted()) {
 							sCon.close();
+							ssCon.close();
 							if(connectivity == 1)
 								ssCon.close();
 							isCon.close();
@@ -739,17 +1023,27 @@ public class Functions implements Runnable{
 						} else if ((bytesRead = isCon.read(buffer)) != -1) {
 							String message = new String(buffer, 0, bytesRead);
 							if (message.equals("HEARTBEAT")) {
-								// System.out.println("Received heartbeat from client: " +
-								// sCon.getInetAddress().toString().replace('/', '\s'));
+								if(heartbeat.equals("-DUTUM"))
+									heartbeat = "DUTUM-";
+								else
+									heartbeat = "-DUTUM";
+								System.out.println(heartbeat);
 								outCon.write(heartbeatMessage.getBytes());
 								outCon.flush();
+								
 							}
-						} else
+						} else {
+							sCon.close();
+							ssCon.close();
+							isCon.close();
+							brCon.close();
+							outCon.close();
 							break;
+						}
 					}
 
 				} catch (IOException e) {
-					System.out.println("Client disconnected!");
+					System.out.println("[1] Client disconnected!");
 					e.printStackTrace();
 					try {
 						sCon.close();
@@ -762,8 +1056,21 @@ public class Functions implements Runnable{
 						if (!retryConnection)
 							createNewConnection();
 					} catch (IOException e1) {
-						e1.printStackTrace();
+						System.out.println("[2] " + e);
 					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					try {
+						ssCon.close();
+						sCon.close();
+						isCon.close();
+						brCon.close();
+						outCon.close();
+					}catch(Exception e1) {
+						System.out.println(e);
+					}
+					System.out.println("[!] Interrupted!");
 				}
 			}
 		};
@@ -789,13 +1096,19 @@ public class Functions implements Runnable{
 							}
 						}
 						if (connectedToNetwork) {
-							System.out.println("Connected to a network.");
+							//System.out.println("Connected to a network.");
 							if(retryConnection) {
+								if(t8 != null) {
+									if(t8.isAlive()) {
+										t8.interrupt();
+									}
+								}
+								createNewConnection();
 								retryConnection = false;
 							}
 						} 
 						else {
-							System.out.println("Not connected to a network...");
+							//System.out.println("Not connected to a network...");
 							if(!retryConnection) {
 								if(t6.isAlive()) {
 									t6.interrupt(); // interrupt network checker
@@ -832,7 +1145,6 @@ public class Functions implements Runnable{
 		t7 = new Thread(runnable);
 		t7.start();
 	}
-	
 	// Closes the socket connection when client disconnects without confirmation
 	private void indirectDc() throws IOException {
 		cs.close();
@@ -886,8 +1198,8 @@ public class Functions implements Runnable{
 			public void run() {
 				while(true) {
 					try {
+						Thread.sleep(2);
 						System.out.println("Retrying connection to client...");
-						
 						if(connectivity == 1) {
 							ss = new ServerSocket(serverPort);
 							ss.setSoTimeout(5000);
@@ -903,8 +1215,25 @@ public class Functions implements Runnable{
 							br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
 							pw = new PrintWriter(cs.getOutputStream(), true);
 						}
+						
 						Thread.sleep(0);
 						
+						if(ss != null) {
+							if(ss.isBound()) {
+								ss.close();
+								cs.close();
+							}
+						}
+						ss = new ServerSocket(serverPort);
+						ss.setSoTimeout(5000);
+						System.out.println(ss != null);
+						System.out.println(cs != null);
+						cs = ss.accept();
+						
+						is = cs.getInputStream();
+						br = new BufferedReader(new InputStreamReader(is));
+						out = cs.getOutputStream();
+						pw = new PrintWriter(out, true);
 						if (cs.isConnected()) {
 							System.out.println("Server has connected to client successfully!");
 							unlockPC();
@@ -929,6 +1258,18 @@ public class Functions implements Runnable{
 						}
 						e.printStackTrace();
 					} catch (InterruptedException e) {
+						try {
+							cs.close();
+							ss.close();
+							is.close();
+							br.close();
+							out.close();
+							pw.close();
+							System.out.println("[T8] Closed.");
+						} catch (Exception e1) {
+							System.out.println("Can't close server and client socket");
+							e1.printStackTrace();
+						}
 						break;
 					}
 				}
@@ -936,6 +1277,335 @@ public class Functions implements Runnable{
 		};
 		t8 = new Thread(r);
 		t8.start();
+	}
+	
+	// Checks if the app has previous running session
+	private boolean chkSession(){
+		// When the app is opened and has a previous ongoing session, the security system will activate again.
+		File file = new File("status.txt");
+		Scanner fs = null;
+		boolean result = false;
+		
+		try {
+			if(!file.exists())
+				file.createNewFile();
+			fs = new Scanner(file);
+			if(fs.hasNextLine()) {
+				if(fs.nextLine().equals("yes")) {
+					result = true;
+				}
+				else
+					result = false;
+			}
+			
+			else {
+				System.out.println("Blank status file!");
+				result = false;
+			}
+		} catch(IOException e) {
+			fs.close();
+		}
+		return result;
+	}
+	
+	private void updateStatus(String status) throws IOException {
+		File file = new File("status.txt");
+		FileWriter fw = null;
+		
+		fw = new FileWriter(status);
+		fw.write(status);
+		fw.close();
+	}
+	
+	private void reconnectToDevice() {
+		Scanner fs = null;
+		try {
+			fs = new Scanner(new File("myID.txt"));
+			String[] data = fs.nextLine().split("\\|");
+			fs.close();
+			// Initialize WIFI SOCKETS
+			if(data[0].equals("wifi")) {
+				System.out.println("Thru wifi!");
+				
+				lockPC();
+				
+				gui.cardLayout.show(gui.container,"lockPanel");
+				InetAddress inetAddress = InetAddress.getLocalHost();
+				hostIP = inetAddress.getLocalHost().getHostAddress();
+				hostName = inetAddress.getLocalHost().getHostName();
+				gui.hostIPHostName.setText(hostIP + " - " + hostName);
+				
+				connectivity = 1;
+				serverPort = Integer.valueOf(data[2]);
+				
+				ss = new ServerSocket(serverPort);
+				cs = new Socket();
+				cs = ss.accept();
+				if(cs.isConnected()) {
+					unlockPC();
+					clientVerified = true;
+					is = cs.getInputStream();
+		    		br = new BufferedReader(new InputStreamReader(is));
+		    		out = cs.getOutputStream();
+		    		pw = new PrintWriter(out,true);
+		    		runInputListener(br);
+					chkNetworkConnection();
+					chkDeviceConnection();
+				}
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	// Gets the directories to encrypt
+	private void getDirectories() {
+		// Create a file chooser
+        JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        fileChooser.setDialogTitle("Choose directories");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setMultiSelectionEnabled(true);
+        selectedFilepaths = new ArrayList<>();
+        
+        // Show the file chooser dialog
+        int result = fileChooser.showOpenDialog(null);
+        
+        // Check if the user selected directories
+        if (result == JFileChooser.APPROVE_OPTION) {
+            // Get the selected directories
+            File[] selectedDirectories = fileChooser.getSelectedFiles();
+
+            // List files in each selected directory (including subdirectories) with full paths
+            for (File directory : selectedDirectories) {
+                System.out.println("Files in directory: " + directory.getAbsolutePath());
+                if(directory.isFile()) {
+                	System.out.println(directory.getAbsolutePath());
+                	saveDirectories(directory.getAbsolutePath().toString());
+                }
+                else
+                	listFiles(directory);
+                
+                System.out.println(); // Add a newline between directories
+            }
+        } else {
+            System.out.println("No directories selected.");
+        }
+	}
+	
+	// Saving the directories to a flatfile
+	private void saveDirectories(String filepath) {
+		try {
+			File dirFile = new File("directories.txt");
+			if(!dirFile.exists()) {
+				dirFile.createNewFile();
+			}
+    		Scanner fscan = new Scanner(new File("directories.txt"));
+    		String path = "";
+    		boolean exists = false;
+    		if(!fscan.hasNextLine()) {
+    			FileWriter fw = new FileWriter("directories.txt",true);
+    			selectedFilepaths.add(filepath);
+				fw.write(filepath + "\n");
+				fw.close();
+    		}
+    		else {
+    			while(fscan.hasNextLine()) {
+    				path = fscan.nextLine();
+        			if(filepath.equals(path)) {
+        				System.out.println("File has been already added.");
+        				exists = true;
+        				break;
+        			}
+        		}
+        		if(!exists) {
+    				FileWriter fw = new FileWriter("directories.txt",true);
+    				selectedFilepaths.add(filepath);
+    				fw.write(filepath + "\n");
+    				fw.close();
+    			}
+    		}
+    		fscan.close();
+		}
+		catch(Exception e) {
+			System.out.println("[SAVE DIR] ERROR " + e);
+			e.printStackTrace();
+		}
+	}
+	
+	// Lists files in that given directory
+	private void listFiles(File directory) {
+		File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    // If the file is a directory, recursively list its files
+                    listFiles(file);
+                } else {
+                    // If the file is a regular file, print its full path
+                    System.out.println(file.getAbsolutePath());
+                    saveDirectories(file.getAbsolutePath().toString());
+                }
+            }
+        } else {
+            System.out.println("Error listing files in directory.");
+        }
+	}
+	
+	// Loads the directory flatfile to a list model
+	private void loadDirectories() {
+		File dirFile = new File("directories.txt");
+		if(dirFile.exists()) {
+			Scanner fscan = null;
+			try {
+				fscan = new Scanner(dirFile);
+				while(fscan.hasNextLine()) {
+					gui.listModel.addElement(fscan.nextLine());
+					gui.repaint();
+				}
+				fscan.close();
+			} 
+			catch (FileNotFoundException e) {
+				e.printStackTrace();
+				fscan.close();
+			}
+		}
+	}
+	
+	// Adds directory to the list model
+	private void addDirectories() {
+		for(String s: selectedFilepaths) {
+			gui.listModel.addElement(s);
+		}
+		gui.repaint();
+	}
+	
+	// Updates the directory flatfile for any changes
+	private void updateSelectedDirectories() {
+		try {
+			File dirFile = new File("directories.txt");
+			dirFile.delete();
+			dirFile.createNewFile();
+			
+			FileWriter fw = new FileWriter(dirFile);
+			
+			int modelSize = gui.listModel.getSize();
+			
+			for(int i = 0; i < modelSize; i++) {
+				fw.write(gui.listModel.get(i) + "\n");
+			}
+			fw.close();
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+	
+	// Encrypts the selected directories/files
+	private void encrypt() {
+		try {
+			Encryptor en = new Encryptor();
+			String secretKey = generateKey();
+			
+			File encDir = new File("encFiles.txt");
+	        encDir.createNewFile();
+	        
+	        File keyFile = new File("encKey.txt");
+	        keyFile.createNewFile();
+	        
+	        PrintWriter pw = new PrintWriter(new FileOutputStream("encKey.txt"));
+	        pw.println(secretKey);
+	        pw.close();
+			
+			Scanner fscan = new Scanner(new File("directories.txt"));
+			loadedFilepaths = new ArrayList<>();
+			
+			while(fscan.hasNextLine()) {
+				loadedFilepaths.add(fscan.nextLine());
+			}
+			fscan.close();
+			
+			for(String s: loadedFilepaths) {
+				File f = new File(s);
+				en.encryptFile(s,f.getParent(),secretKey);
+			}
+				
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	// Decrypts the encrypted files
+	private void decrypt() {
+		try {
+			Decryptor de = new Decryptor();
+			Scanner fscan = new Scanner(new File("encFiles.txt"));
+			loadedFilepaths = new ArrayList<>();
+			
+			while(fscan.hasNextLine()) {
+				loadedFilepaths.add(fscan.nextLine());
+			}
+			fscan.close();
+			fscan = new Scanner(new File("encKey.txt"));
+			String key = fscan.nextLine();
+			fscan.close();
+			for(String s: loadedFilepaths) {
+				File f = new File(s);
+				de.decryptFile(s,f.getParent(),key);
+			}
+		}
+		catch(Exception e) {
+			System.out.println("[DECRYPT] CANNOT DECRYPT AT THIS MOMENT.");
+		}
+	}
+	
+	// Generates an 128bit alphanumerical key
+	private String generateKey() {
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(16);
+
+        for (int i = 0; i < 16; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        return sb.toString();
+	}
+	
+	// Adds fade in transition for the window when opening the app
+	public static void fadeTransition(JFrame frame) {
+		final javax.swing.Timer[] timer = {null};
+
+        timer[0] = new javax.swing.Timer(10, new ActionListener() {
+            private long startTime = -1;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (startTime < 0) {
+                    startTime = System.currentTimeMillis();
+                }
+
+                long currentTime = System.currentTimeMillis();
+                long elapsedTime = currentTime - startTime;
+
+                if (elapsedTime < FADE_DURATION) {
+                    float opacity = (float) elapsedTime / FADE_DURATION;
+                    frame.setOpacity(opacity);
+                } else {
+                    frame.setOpacity(1.0f); // Ensure opacity is set to 1 at the end
+                    timer[0].stop();
+                }
+            }
+        });
+
+        timer[0].start();
 	}
 	
 	/*
