@@ -13,6 +13,10 @@ import java.awt.Container;
 import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 
 import javax.swing.SwingConstants;
@@ -106,6 +110,8 @@ public class MainApp extends JFrame {
 	
 	public int mouseX,mouseY;
 	private JLabel connectedToLbl;
+	private JLabel lblRecoveryKey;
+	public JLabel generatedRecoveryKey;
 	
 	
 	/**
@@ -321,27 +327,27 @@ public class MainApp extends JFrame {
 		hostnameLabel.setForeground(new Color(255, 255, 255));
 		hostnameLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		hostnameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostnameLabel.setBounds(181, 196, 318, 37);
+		hostnameLabel.setBounds(232, 196, 318, 37);
 		authPanel.add(hostnameLabel);
 
 		clientConnectStatus = new JLabel("Status: Encode status here...");
 		clientConnectStatus.setForeground(new Color(255, 255, 255));
 		clientConnectStatus.setHorizontalAlignment(SwingConstants.LEFT);
 		clientConnectStatus.setFont(new Font("Tahoma", Font.BOLD, 20));
-		clientConnectStatus.setBounds(54, 402, 496, 37);
+		clientConnectStatus.setBounds(54, 436, 496, 37);
 		authPanel.add(clientConnectStatus);
 
 		JLabel lblPasscode = new JLabel("Passcode: ");
 		lblPasscode.setForeground(new Color(255, 255, 255));
 		lblPasscode.setHorizontalAlignment(SwingConstants.LEFT);
 		lblPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPasscode.setBounds(54, 285, 117, 37);
+		lblPasscode.setBounds(54, 333, 117, 37);
 		authPanel.add(lblPasscode);
 
 		generatedPasscode = new JLabel("Encode passcode here");
 		generatedPasscode.setForeground(new Color(255, 255, 255));
 		generatedPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		generatedPasscode.setBounds(180, 285, 241, 37);
+		generatedPasscode.setBounds(232, 333, 318, 37);
 		authPanel.add(generatedPasscode);
 		
 		cancelHostConnection = new JButton("CANCEL");
@@ -349,21 +355,21 @@ public class MainApp extends JFrame {
 		cancelHostConnection.setBackground(new Color(255, 0, 0));
 		cancelHostConnection.setBorderPainted(false);
 		cancelHostConnection.setFont(new Font("Tahoma", Font.BOLD, 25));
-		cancelHostConnection.setBounds(202, 461, 167, 53);
+		cancelHostConnection.setBounds(203, 499, 167, 53);
 		authPanel.add(cancelHostConnection);
 		
 		JLabel lblPort = new JLabel("Port:");
 		lblPort.setForeground(new Color(255, 255, 255));
 		lblPort.setHorizontalAlignment(SwingConstants.LEFT);
 		lblPort.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPort.setBounds(54, 333, 117, 37);
+		lblPort.setBounds(54, 285, 117, 37);
 		authPanel.add(lblPort);
 		
 		hostPortLbl = new JLabel("Encode port here");
 		hostPortLbl.setForeground(new Color(255, 255, 255));
 		hostPortLbl.setHorizontalAlignment(SwingConstants.LEFT);
 		hostPortLbl.setFont(new Font("Tahoma", Font.BOLD, 20));
-		hostPortLbl.setBounds(181, 333, 219, 37);
+		hostPortLbl.setBounds(232, 285, 318, 37);
 		authPanel.add(hostPortLbl);
 		
 		JLabel hostIPLbl = new JLabel("Host IP:");
@@ -377,13 +383,27 @@ public class MainApp extends JFrame {
 		hostIPLabel.setForeground(new Color(255, 255, 255));
 		hostIPLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		hostIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostIPLabel.setBounds(181, 237, 318, 37);
+		hostIPLabel.setBounds(232, 239, 318, 37);
 		authPanel.add(hostIPLabel);
 		
 		encSetupBtn = new JButton("encSetup");
 		encSetupBtn.setBounds(28, 75, 89, 23);
 		
 		authPanel.add(encSetupBtn);
+		
+		lblRecoveryKey = new JLabel("Recovery Key: ");
+		lblRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
+		lblRecoveryKey.setForeground(Color.WHITE);
+		lblRecoveryKey.setFont(new Font("Tahoma", Font.BOLD, 20));
+		lblRecoveryKey.setBounds(54, 381, 160, 37);
+		authPanel.add(lblRecoveryKey);
+		
+		generatedRecoveryKey = new JLabel("Encode key here");
+		generatedRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
+		generatedRecoveryKey.setForeground(Color.WHITE);
+		generatedRecoveryKey.setFont(new Font("Tahoma", Font.BOLD, 20));
+		generatedRecoveryKey.setBounds(232, 381, 318, 37);
+		authPanel.add(generatedRecoveryKey);
 		
 		// Connection Status Panel
 		connectStatusPanel = new JPanel();
@@ -481,52 +501,82 @@ public class MainApp extends JFrame {
 		lsContainer = w.getContentPane();
 		lsContainer.setLayout(lsCardLayout);
 		
+		// Lock Panel
 		lockPanel = new JPanel();
 		lsContainer.add(lockPanel,"lockPanel");
-		lockPanel.setLayout(null);
+		lockPanel.setLayout(new GridLayout(0,1,0,0));
+		
+		JPanel panel1 = new JPanel();
+		JPanel panel2 = new JPanel();
+		panel1.setLayout(new BorderLayout());
+		lockPanel.add(panel1);
+		lockPanel.add(panel2);
 		
 		windowLockLabel = new JLabel("Your PC is locked.");
-		windowLockLabel.setBounds(541, 312, 439, 70);
 		windowLockLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
-		lockPanel.add(windowLockLabel);
+		panel1.add(windowLockLabel, BorderLayout.SOUTH);
 		
 		recoveryBtn = new JButton("Recovery Mode");
-		recoveryBtn.setBounds(688,392,146,45);
-		lockPanel.add(recoveryBtn);
+		recoveryBtn.setPreferredSize(new Dimension(150,40));
+		panel2.add(recoveryBtn);
 		
+		// Recovery Mode Panel
+		GridBagLayout gbl = new GridBagLayout();
 		recoveryPanel = new JPanel();
 		lsContainer.add(recoveryPanel,"recoveryPanel");
-		recoveryPanel.setLayout(null);
+		recoveryPanel.setLayout(gbl);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
 		
 		recoveryLabel = new JLabel("Recovery Mode");
-		recoveryLabel.setBounds(541, 312, 439, 70);
 		recoveryLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		recoveryLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
-		recoveryPanel.add(recoveryLabel);
+		gbc.ipady = 10;
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 5;
+		recoveryPanel.add(recoveryLabel,gbc);
 		
 		enterPasscodeLbl = new JLabel("Enter Unique Passcode");
 		enterPasscodeLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		enterPasscodeLbl.setBounds(442, 405, 159, 27);
-		recoveryPanel.add(enterPasscodeLbl);
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(20,200,0,20);
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		recoveryPanel.add(enterPasscodeLbl,gbc);
 		
-		inputStatusLbl = new JLabel("Enter input status here.");
-		inputStatusLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		inputStatusLbl.setBounds(634, 532, 159, 27);
-		recoveryPanel.add(inputStatusLbl);
+//		inputStatusLbl = new JLabel("Enter input status here.");
+//		inputStatusLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
+//		inputStatusLbl.setBounds(634, 532, 159, 27);
+//		recoveryPanel.add(inputStatusLbl);
 		
 		uniquePasscodeInput = new JTextField();
-		uniquePasscodeInput.setBounds(634, 395, 416, 37);
 		uniquePasscodeInput.setColumns(10);
-		recoveryPanel.add(uniquePasscodeInput);
+		gbc.insets = new Insets(20,-150,0,100);
+		gbc.ipadx = 300;
+		gbc.ipady = 15;
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		gbc.gridwidth = 3;
+		recoveryPanel.add(uniquePasscodeInput,gbc);
 		
 		cancelRecoveryBtn = new JButton("CANCEL");
-		cancelRecoveryBtn.setBounds(634, 465, 117, 37);
-		recoveryPanel.add(cancelRecoveryBtn);
-		
 		recoverBtn = new JButton("RECOVER");
-		recoverBtn.setBounds(785,465,117,37);
-		recoveryPanel.add(recoverBtn);
+		
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(20,120,0,0);
+		gbc.ipadx = 10;
+		gbc.ipady = 10;
+		gbc.weightx = 0.0;
+		gbc.gridx = 3;
+		gbc.gridy = 3;
+		recoveryPanel.add(cancelRecoveryBtn,gbc);
+		
+		gbc.insets = new Insets(20,10,0,400);
+		gbc.gridx = 4;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		recoveryPanel.add(recoverBtn,gbc);
 		
 	}
 }

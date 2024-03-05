@@ -78,6 +78,7 @@ public class Functions implements Runnable{
 	public String hostName;
 	public String hostDetails;
 	public File hostIDFile;
+	public String recoveryKey;
 	public final int MIN_PORT_RANGE = 49152;
 	public final int MAX_PORT_RANGE = 65535;
 	public boolean unlocked = true;
@@ -235,6 +236,30 @@ public class Functions implements Runnable{
 			}
 		});
 		
+		gui.recoverBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if(chkRecoveryKey()) {
+						gui.w.dispose();
+						gui.dispose();
+						if(!unlocked) {
+							try {
+								p = openExp.start();
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+						System.exit(0);
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			}
+		});
+		
 		// Encryption Setup Buttons
 		gui.addBtn.addActionListener(new ActionListener() {
 			@Override
@@ -273,7 +298,6 @@ public class Functions implements Runnable{
 		
 		// KS Button
 		gui.enterPasscodeLbl.addMouseListener(new MouseListener() {
-
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				clkCnt++;
@@ -328,8 +352,8 @@ public class Functions implements Runnable{
 		MainApp gui = new MainApp();
 		Functions f = new Functions();
 		f.gui.setVisible(true);
-		//f.gui.setOpacity(0.0f);
-		//fadeTransition(f.gui);
+		f.gui.setOpacity(0.0f);
+		fadeTransition(f.gui);
 	}
 	
 	@Override // This is the main thread
@@ -345,6 +369,8 @@ public class Functions implements Runnable{
 						clientVerified = false;
 						serverPort = generatePort();
 						clientID = generateClientDeviceID();
+						recoveryKey = generateRecoveryKey();
+						gui.generatedRecoveryKey.setText(recoveryKey);
 						
 						if(chkHostID()) {
 							hostIDFile = new File("myID.txt");
@@ -360,13 +386,13 @@ public class Functions implements Runnable{
 							fw.close();
 						}
 						
-						System.out.println("gnssGenID|" + clientID + "|" + hostDetails);
+						System.out.println("[WIFI_MODE] gnssGenID|" + clientID + "|" + hostDetails);
 						
 						// Establish a ServerSocket connection
 				        while(true) {
 							ss = new ServerSocket(serverPort);
-							System.out.println(ss.getLocalPort());
-							System.out.println("Waiting for client connection...");
+							System.out.println("[WIFI_MODE] " + ss.getLocalPort());
+							System.out.println("[WIFI_MODE] Waiting for client connection...");
 							gui.clientConnectStatus.setText("Status: Waiting for client connection...");
 					        cs = ss.accept();
 					        if(cs.isConnected()) {
@@ -383,23 +409,27 @@ public class Functions implements Runnable{
 				    			
 								// Check if client is connected
 								if (cs.isConnected()) {
-									gui.clientConnectStatus.setText("Status: Awaiting client verification...");
+									gui.clientConnectStatus.setText("[WIFI_MODE] Status: Awaiting client verification...");
 									
 									// Waits the client's response for the passcode
 									output = br.readLine();
-									System.out.println(output);
+									System.out.println("[WIFI_MODE] Client Message: " + output);
 									
 									// Verifies client connection and opens access control
 									if (output.equals("connectVerify" + hostPasscode)) {
-										System.out.println("Client Verified!");
+										System.out.println("[WIFI_MODE] Client Verified!");
 										gui.cardLayout.show(gui.container, "connectStatusPanel");
 										gui.repaint();
 										gui.hostIPHostName.setText(hostIP + " - " + hostName);
+										createRecoveryKey();
+										
+										Thread.sleep(2000);
+										
 										pw.println("gnssVerified" + hostPasscode);
 										clientVerified = true;
 										
 										InetAddress ia = cs.getInetAddress();
-										System.out.println("Client Local IP Address: " + ia.getHostAddress());
+										System.out.println("[WIFI_MODE] Client Local IP Address: " + ia.getHostAddress());
 										runInputListener(br);
 										chkNetworkConnection();
 										chkDeviceConnection();
@@ -408,11 +438,11 @@ public class Functions implements Runnable{
 									
 									// When client inputs wrong passcode, decrease attempt by -1
 									else {
-										System.out.println("Incorrect Passcode! ");
+										System.out.println("[WIFI_MODE] Incorrect Passcode! ");
 										if(attempts > 0) {
 											// Sends out an input saying that the given passcode was incorrect
 											pw.println("incorrectPasscode");
-											if(cs.isConnected()) System.out.println("Client is still connected.");
+											if(cs.isConnected()) System.out.println("[WIFI_MODE] Client is still connected.");
 											attempts--;
 											cs.close();
 											ss.close();
@@ -482,18 +512,18 @@ public class Functions implements Runnable{
                         System.out.println(message);
                         if(message!=null){
                             if (message.equals("incorrectPasscode")) {
-                                System.out.println("Connected but incorrect passcode.");
+                                System.out.println("[HS_MODE] Connected but incorrect passcode.");
                                 cs.close();
                                 pw.close();
                                 br.close();
                             } else if (message.equals("accessDenied")) {
-                                System.out.println("Attempts ran out. Disconnected from session.");
+                                System.out.println("[HS_MODE] Attempts ran out. Disconnected from session.");
                                 cs.close();
                                 pw.close();
                                 br.close();
                                 break;
                             } else if (message.equals("gnssVerified"+hotspotPasscode)) {
-                                System.out.println("Successful Connection");
+                                System.out.println("[HS_MODE] Successful Connection");
                                 clientVerified = true;
                                 gui.cardLayout.show(gui.container, "connectStatusPanel");
 								gui.repaint();
@@ -520,13 +550,13 @@ public class Functions implements Runnable{
 
                         // Detects if the client socket connection disconnects to the server.
                         else{
-                            System.out.println("Server disconnected!");
-                            System.out.println("Client/Server disconnected!");
+                            System.out.println("[HS_MODE] Server disconnected!");
+                            System.out.println("[HS_MODE] Client/Server disconnected!");
                             break;
                         }
 
                     } else {
-                        System.out.println("Socket isn't connected.");
+                        System.out.println("[HS_MODE] Socket isn't connected.");
                     }
                 }
 				
@@ -564,7 +594,7 @@ public class Functions implements Runnable{
 	// Creates a Socket Connection in this PC
 	void joinHost() {
 		try {
-			System.out.println("Connecting to hotspot...");
+			System.out.println("[JOIN_HS] Connecting to hotspot...");
 			t1 = new Thread(this);
 			t1.start();
 			//Socket s = new Socket(getDefaultGateway(), 1);
@@ -673,13 +703,22 @@ public class Functions implements Runnable{
 					fw.close();
 				}
 				else {
-					System.out.println("Client Already Registered!");
+					System.out.println("[SEND_CLIENT_IDS] Client Already Registered!");
 				}
 			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private void createRecoveryKey() throws IOException {
+		File file = new File("recoveryKey.txt");
+		file.createNewFile();
+		
+		FileWriter fw = new FileWriter(file);
+		fw.write(recoveryKey + "\n");
+		fw.close();
 	}
 	
 	// Generates a random client ID
@@ -751,19 +790,13 @@ public class Functions implements Runnable{
 			public void run() {
 				while(true) {
 					try {
-						System.out.println("Running in input function");
+						System.out.println("[runInputListener] Running in input function");
 						String output = br.readLine();
-						if(br.ready()) {
-							System.out.println("ready!");
-						}
-						else {
-							System.out.println("not ready...");
-						}
 						if(clientVerified) {
 							if(output == null)
-								System.out.println("[INPUT] Client Device disconnected!");
+								System.out.println("[runInputListener] Client Device disconnected!");
 							command(output);
-							System.out.println(output);
+							System.out.println("[runInputListener] Client Message: " + output);
 						}
 					} catch (Exception e) {
 						try {
@@ -797,7 +830,7 @@ public class Functions implements Runnable{
 	}
 	
 	// Command method (executes commands depending on the input of the user)
-	public void command(String cmd) throws IOException {
+	public void command(String cmd) throws IOException{
 		if(clientVerified) {
 			switch(cmd) {
 			// Lock PC
@@ -827,17 +860,17 @@ public class Functions implements Runnable{
 				break;
 			default:
 				if(cmd.contains("gnssClientID")) {
-					System.out.println("Client has an ID! Checking existence.");
+					System.out.println("[CMD] Client has an ID! Checking existence.");
 					String[] data = cmd.split("\\|");
 					cID = data[1];
 					createClientRecord(false);
 				}
 				else
-					System.out.println("[!] Unknown command.");
+					System.out.println("[CMD] ! Unknown command.");
 			}
 		}
 		else {
-			System.out.println("[!] No access.");
+			System.out.println("[CMD] ! No access.");
 		}
 	}
 	
@@ -845,11 +878,11 @@ public class Functions implements Runnable{
 	private void lockPC() {
 		if(unlocked) {
 			unlocked = false;
-			System.out.println("[!] Locking PC!");
+			System.out.println("[LOCK PC] Locking PC!");
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
-			gui.inputStatusLbl.setVisible(false);
-			//gui.w.setVisible(true);
+			// gui.inputStatusLbl.setVisible(false);
+			gui.w.setVisible(true);
 			//gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
@@ -879,7 +912,7 @@ public class Functions implements Runnable{
 //			}
 		}
 		else {
-			System.out.println("Device is already locked!");
+			System.out.println("[LOCK PC] Device is already locked!");
 		}
 	}
 	
@@ -887,7 +920,7 @@ public class Functions implements Runnable{
 	private void unlockPC(){
 		if(!unlocked) {
 			unlocked = true;
-			System.out.println("[!] Unlocking PC!");
+			System.out.println("[UNLOCK PC] Unlocking PC!");
 			gui.w.setVisible(false);
 			
 			// (Deactivate all security measures)
@@ -908,7 +941,7 @@ public class Functions implements Runnable{
 			
 			// 4. Enable taskmanager when opened
 			t4.interrupt();
-			System.out.println("Taskmanager killer has stopped.");
+			System.out.println("[UNLOCK PC] Taskmanager killer has stopped.");
 			
 			// 5. Remove application to open on startup
 //			try {
@@ -918,13 +951,13 @@ public class Functions implements Runnable{
 //			}
 		}
 		else {
-			System.out.println("Device is already unlocked!");
+			System.out.println("[UNLOCK PC] Device is already unlocked!");
 		}
 	}
 	
 	// Sets control mode (Automatically/Manually locks/unlocks PC)
 	private void setControlMode() {
-		System.out.println("[!] Control mode set!");
+		System.out.println("[!] (DEPRECATED) Control mode set!");
 		if(!autoControl) {
 			autoControl = true;
 		}
@@ -987,14 +1020,14 @@ public class Functions implements Runnable{
 				try {
 					if(connectivity == 1) {
 						ssCon = new ServerSocket(11111);
-						System.out.println("Waiting for client connection for connection checker...");
+						System.out.println("[CHK_DEVICE_CONN] Waiting for client connection for connection checker...");
 						sCon = ssCon.accept();
 						sCon.setSoTimeout(2000);
 					}
 					else if(connectivity == 2) {
-						System.out.println("Waiting for client connection for connection checker...");
+						System.out.println("[CHK_DEVICE_CONN] Waiting for client connection for connection checker...");
 						sCon = new Socket(getDefaultGateway(),54541);
-						System.out.println("Connected to Device Conn checker!");
+						System.out.println("[CHK_DEVICE_CONN] Connected to Device Conn checker!");
 						//sCon.setSoTimeout(2000);
 					}
 					
@@ -1043,7 +1076,7 @@ public class Functions implements Runnable{
 					}
 
 				} catch (IOException e) {
-					System.out.println("[1] Client disconnected!");
+					System.out.println("[CHK_DEVICE_CONN] Client disconnected!");
 					e.printStackTrace();
 					try {
 						sCon.close();
@@ -1056,7 +1089,7 @@ public class Functions implements Runnable{
 						if (!retryConnection)
 							createNewConnection();
 					} catch (IOException e1) {
-						System.out.println("[2] " + e);
+						System.out.println("[CHK_DEVICE_CONN] " + e);
 					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -1070,7 +1103,7 @@ public class Functions implements Runnable{
 					}catch(Exception e1) {
 						System.out.println(e);
 					}
-					System.out.println("[!] Interrupted!");
+					System.out.println("[CHK_DEVICE_CONN] Interrupted!");
 				}
 			}
 		};
@@ -1131,7 +1164,7 @@ public class Functions implements Runnable{
 						e.printStackTrace();
 						break;
 					} catch (InterruptedException e) {
-						System.out.println("Network Connection checker interrupted!");
+						System.out.println("[CHK_NET] Network Connection checker interrupted!");
 						e.printStackTrace();
 						break;
 					} catch (IOException e) {
@@ -1159,7 +1192,7 @@ public class Functions implements Runnable{
 	
 	// Closes the socket connection, therefore two devices will disconnect
 	private void disconnect() throws IOException {
-		System.out.println("[!] Disconnecting!");
+		System.out.println("[DC] Disconnecting!");
 		gui.cardLayout.show(gui.container, "hostPanel");
 		gui.repaint();
 		clientVerified = false;
@@ -1185,7 +1218,7 @@ public class Functions implements Runnable{
 	
 	// Cancels the host connection
 	private void cancelHostConnection() throws IOException {
-		System.out.println("[!] Disconnecting!");
+		System.out.println("[CANCEL_HOST_CONN] Disconnecting!");
 		ss.close();
 		gui.cardLayout.show(gui.container, "hostPanel");
 		gui.repaint();
@@ -1199,7 +1232,7 @@ public class Functions implements Runnable{
 				while(true) {
 					try {
 						Thread.sleep(2);
-						System.out.println("Retrying connection to client...");
+						System.out.println("[CREATE_CONN] Retrying connection to client...");
 						if(connectivity == 1) {
 							ss = new ServerSocket(serverPort);
 							ss.setSoTimeout(5000);
@@ -1235,7 +1268,7 @@ public class Functions implements Runnable{
 						out = cs.getOutputStream();
 						pw = new PrintWriter(out, true);
 						if (cs.isConnected()) {
-							System.out.println("Server has connected to client successfully!");
+							System.out.println("[CREATE_CONN] Server has connected to client successfully!");
 							unlockPC();
 							runInputListener(br);
 							chkDeviceConnection();
@@ -1253,7 +1286,7 @@ public class Functions implements Runnable{
 							else if(connectivity == 2)
 								cs.close();
 						} catch (IOException e1) {
-							System.out.println("Error in closing serversocket.");
+							System.out.println("[CREATE_CONN] Error in closing serversocket.");
 							e1.printStackTrace();
 						}
 						e.printStackTrace();
@@ -1265,9 +1298,9 @@ public class Functions implements Runnable{
 							br.close();
 							out.close();
 							pw.close();
-							System.out.println("[T8] Closed.");
+							System.out.println("[CREATE_CONN] Thread Closed.");
 						} catch (Exception e1) {
-							System.out.println("Can't close server and client socket");
+							System.out.println("[CREATE_CONN] Can't close server and client socket");
 							e1.printStackTrace();
 						}
 						break;
@@ -1279,11 +1312,34 @@ public class Functions implements Runnable{
 		t8.start();
 	}
 	
+	// Checks if inputted recovery key is valid
+	private boolean chkRecoveryKey() throws IOException {
+		File file = new File("recoveryKey.txt");
+		Scanner fs = new Scanner(file);
+		String recoveryKey;
+		String input = gui.uniquePasscodeInput.getText();
+		boolean result;
+		
+		recoveryKey = fs.nextLine();
+		fs.close();
+		
+		if(input.equals(recoveryKey)) {
+			updateStatus("no");
+			result = true;
+		}
+		else {
+			result = false;
+		}
+		
+		return result;
+	}
+	
 	// Checks if the app has previous running session
 	private boolean chkSession(){
 		// When the app is opened and has a previous ongoing session, the security system will activate again.
 		File file = new File("status.txt");
 		Scanner fs = null;
+		FileWriter fw = null;
 		boolean result = false;
 		
 		try {
@@ -1299,7 +1355,10 @@ public class Functions implements Runnable{
 			}
 			
 			else {
-				System.out.println("Blank status file!");
+				System.out.println("[CHK_SESSION] Blank status file!");
+				fw = new FileWriter(file);
+				fw.write("no" + "\n");
+				fw.close();
 				result = false;
 			}
 		} catch(IOException e) {
@@ -1312,7 +1371,7 @@ public class Functions implements Runnable{
 		File file = new File("status.txt");
 		FileWriter fw = null;
 		
-		fw = new FileWriter(status);
+		fw = new FileWriter(file);
 		fw.write(status);
 		fw.close();
 	}
@@ -1325,7 +1384,7 @@ public class Functions implements Runnable{
 			fs.close();
 			// Initialize WIFI SOCKETS
 			if(data[0].equals("wifi")) {
-				System.out.println("Thru wifi!");
+				System.out.println("[RECONN_DEVICE] PC has wifi session.");
 				
 				lockPC();
 				
@@ -1348,6 +1407,7 @@ public class Functions implements Runnable{
 		    		br = new BufferedReader(new InputStreamReader(is));
 		    		out = cs.getOutputStream();
 		    		pw = new PrintWriter(out,true);
+		    		Thread.sleep(2000);
 		    		runInputListener(br);
 					chkNetworkConnection();
 					chkDeviceConnection();
@@ -1357,6 +1417,9 @@ public class Functions implements Runnable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -1382,7 +1445,7 @@ public class Functions implements Runnable{
 
             // List files in each selected directory (including subdirectories) with full paths
             for (File directory : selectedDirectories) {
-                System.out.println("Files in directory: " + directory.getAbsolutePath());
+                System.out.println("[GET_DIR] Files in directory: " + directory.getAbsolutePath());
                 if(directory.isFile()) {
                 	System.out.println(directory.getAbsolutePath());
                 	saveDirectories(directory.getAbsolutePath().toString());
@@ -1393,7 +1456,7 @@ public class Functions implements Runnable{
                 System.out.println(); // Add a newline between directories
             }
         } else {
-            System.out.println("No directories selected.");
+            System.out.println("[GET_DIR] No directories selected.");
         }
 	}
 	
@@ -1417,7 +1480,7 @@ public class Functions implements Runnable{
     			while(fscan.hasNextLine()) {
     				path = fscan.nextLine();
         			if(filepath.equals(path)) {
-        				System.out.println("File has been already added.");
+        				System.out.println("[SAVE_DIRS] File has been already added.");
         				exists = true;
         				break;
         			}
@@ -1432,7 +1495,7 @@ public class Functions implements Runnable{
     		fscan.close();
 		}
 		catch(Exception e) {
-			System.out.println("[SAVE DIR] ERROR " + e);
+			System.out.println("[SAVE_DIRS] ERROR " + e);
 			e.printStackTrace();
 		}
 	}
@@ -1452,7 +1515,7 @@ public class Functions implements Runnable{
                 }
             }
         } else {
-            System.out.println("Error listing files in directory.");
+            System.out.println("[LIST_DIRS] Error listing files in directory.");
         }
 	}
 	
