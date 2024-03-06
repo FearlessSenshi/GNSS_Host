@@ -189,6 +189,7 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					connectivity = 0;
+					updateStatus("no");
 					disconnect();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -243,6 +244,7 @@ public class Functions implements Runnable{
 					if(chkRecoveryKey()) {
 						gui.w.dispose();
 						gui.dispose();
+						updateStatus("no");
 						if(!unlocked) {
 							try {
 								p = openExp.start();
@@ -423,6 +425,7 @@ public class Functions implements Runnable{
 										gui.repaint();
 										gui.hostIPHostName.setText(hostIP + " - " + hostName);
 										createRecoveryKey();
+										updateStatus("yes");
 										
 										Thread.sleep(2000);
 										
