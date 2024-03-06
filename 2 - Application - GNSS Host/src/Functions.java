@@ -340,7 +340,6 @@ public class Functions implements Runnable{
 
 		});
 		
-		gui.w.setVisible(true);
 		if(chkSession()) {
 			gui.setVisible(true);
 			gui.cardLayout.show(gui.container, "connectStatusPanel");
@@ -650,7 +649,8 @@ public class Functions implements Runnable{
 		Scanner fs = null;
 		FileWriter fw = null;
 		String regID = "";
-
+		
+		// If the connecting device has no ID (hence, a new device)
 		if(newConnection) {
 			try {
 				if(!file.exists()) {
@@ -686,6 +686,8 @@ public class Functions implements Runnable{
 				e.printStackTrace();
 			}
 		}
+		
+		// If the connecting device has an existing ID
 		else if(!newConnection) {
 			try {
 				boolean exists = false;
@@ -749,7 +751,7 @@ public class Functions implements Runnable{
             sb.append(characters.charAt(index));
         }
         
-        return "wifi|" + String.valueOf(hostIP) + "|" + String.valueOf(serverPort) + "|" + sb.toString();
+        return connectivity + "|" + String.valueOf(hostIP) + "|" + String.valueOf(serverPort) + "|" + sb.toString();
 	}
 	
 	// Generates a random port
@@ -886,7 +888,7 @@ public class Functions implements Runnable{
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			// gui.inputStatusLbl.setVisible(false);
-			gui.w.setVisible(true);
+			// gui.w.setVisible(true);
 			//gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
@@ -1237,6 +1239,12 @@ public class Functions implements Runnable{
 					try {
 						Thread.sleep(2);
 						System.out.println("[CREATE_CONN] Retrying connection to client...");
+						if(ss != null) {
+							if(ss.isBound()) {
+								ss.close();
+								cs.close();
+							}
+						}
 						if(connectivity == 1) {
 							ss = new ServerSocket(serverPort);
 							ss.setSoTimeout(5000);
@@ -1253,24 +1261,6 @@ public class Functions implements Runnable{
 							pw = new PrintWriter(cs.getOutputStream(), true);
 						}
 						
-						Thread.sleep(0);
-						
-						if(ss != null) {
-							if(ss.isBound()) {
-								ss.close();
-								cs.close();
-							}
-						}
-						ss = new ServerSocket(serverPort);
-						ss.setSoTimeout(5000);
-						System.out.println(ss != null);
-						System.out.println(cs != null);
-						cs = ss.accept();
-						
-						is = cs.getInputStream();
-						br = new BufferedReader(new InputStreamReader(is));
-						out = cs.getOutputStream();
-						pw = new PrintWriter(out, true);
 						if (cs.isConnected()) {
 							System.out.println("[CREATE_CONN] Server has connected to client successfully!");
 							unlockPC();
