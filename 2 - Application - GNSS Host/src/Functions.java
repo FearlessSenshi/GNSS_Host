@@ -47,8 +47,8 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
-// 		Name: LENOVO IDEAPAD ;)
-//		DT  : 03-06-2024 0317
+// 		Name: SENSHI PC ;)
+//		DT  : 03-07-2024 0305
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -358,7 +358,8 @@ public class Functions implements Runnable{
 		fadeTransition(f.gui);
 	}
 	
-	@Override // This is the main thread
+	// This is the main thread
+	@Override 
 	public void run() {
 		if(connectivity == 1) {
 			// AUTHENTICATION - When authentication between host and client didn't fail, continue
