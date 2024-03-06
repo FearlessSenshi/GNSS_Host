@@ -338,6 +338,7 @@ public class Functions implements Runnable{
 
 		});
 		
+		gui.w.setVisible(true);
 		if(chkSession()) {
 			gui.setVisible(true);
 			gui.cardLayout.show(gui.container, "connectStatusPanel");
