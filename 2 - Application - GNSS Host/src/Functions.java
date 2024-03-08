@@ -48,7 +48,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-07-2024 0305
+//		DT  : 03-08-2024 2019
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -127,10 +127,10 @@ public class Functions implements Runnable{
 		gui = new MainApp();
 		
 		// Get the current working directory
-        String currentDirectory = System.getProperty("user.dir") + "\\NSS.exe";
+        appPath = System.getProperty("user.dir") + "\\NSS.exe";
 
-        // Print the current working directory
-        JOptionPane.showMessageDialog(null, currentDirectory);
+        // (DEBUG) Print the current working directory
+        // JOptionPane.showMessageDialog(null, currentDirectory);
 		
 		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe"); // exits explorer.exe (file explorer and the taskbar)
 		openExp = new ProcessBuilder("explorer.exe"); // opens explorer.exe (file explorer and the taskbar)
@@ -189,7 +189,6 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					connectivity = 0;
-					updateStatus("no");
 					disconnect();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -248,6 +247,7 @@ public class Functions implements Runnable{
 						if(!unlocked) {
 							try {
 								p = openExp.start();
+								p = removeTask.start();
 							} catch (IOException e1) {
 								e1.printStackTrace();
 							}
@@ -378,6 +378,16 @@ public class Functions implements Runnable{
 						if(chkHostID()) {
 							hostIDFile = new File("myID.txt");
 							Scanner fs = new Scanner(hostIDFile);
+							hostDetails = fs.nextLine();
+							fs.close();
+							
+							FileWriter fw = new FileWriter(hostIDFile);
+							String[] data = hostDetails.split("\\|");
+							data[2] = String.valueOf(serverPort);
+							fw.write(data[0]+"|"+data[1]+"|"+data[2]+"|"+data[3]+"\n");
+							fw.close();
+							
+							fs = new Scanner(hostIDFile);
 							hostDetails = fs.nextLine();
 							fs.close();
 						}
@@ -852,11 +862,6 @@ public class Functions implements Runnable{
 			case "3":
 				unlockPC();
 				disconnect();
-			// Switch Security Mode
-//			case "toggleControlMode":
-//				setControlMode();
-//				break;
-			// Host Direct Disconnection
 			case "disconnect":
 				disconnect();
 				break;
@@ -870,6 +875,7 @@ public class Functions implements Runnable{
 					System.out.println("[CMD] Client has an ID! Checking existence.");
 					String[] data = cmd.split("\\|");
 					cID = data[1];
+					sendClientIDs();
 					createClientRecord(false);
 				}
 				else
@@ -959,17 +965,6 @@ public class Functions implements Runnable{
 		}
 		else {
 			System.out.println("[UNLOCK PC] Device is already unlocked!");
-		}
-	}
-	
-	// Sets control mode (Automatically/Manually locks/unlocks PC)
-	private void setControlMode() {
-		System.out.println("[!] (DEPRECATED) Control mode set!");
-		if(!autoControl) {
-			autoControl = true;
-		}
-		else {
-			autoControl = false;
 		}
 	}
 	
@@ -1199,6 +1194,7 @@ public class Functions implements Runnable{
 	
 	// Closes the socket connection, therefore two devices will disconnect
 	private void disconnect() throws IOException {
+		updateStatus("no");
 		System.out.println("[DC] Disconnecting!");
 		gui.cardLayout.show(gui.container, "hostPanel");
 		gui.repaint();
@@ -1338,18 +1334,18 @@ public class Functions implements Runnable{
 		boolean result = false;
 		
 		try {
-			if(!file.exists())
-				file.createNewFile();
-			fs = new Scanner(file);
-			if(fs.hasNextLine()) {
-				if(fs.nextLine().equals("yes")) {
-					result = true;
+			if(file.exists()) {
+				fs = new Scanner(file);
+				if (fs.hasNextLine()) {
+					if (fs.nextLine().equals("yes")) {
+						result = true;
+					} else
+						result = false;
 				}
-				else
-					result = false;
+				fs.close();
 			}
-			
-			else {
+			else if(!file.exists()) {
+				file.createNewFile();
 				System.out.println("[CHK_SESSION] Blank status file!");
 				fw = new FileWriter(file);
 				fw.write("no" + "\n");
@@ -1357,6 +1353,12 @@ public class Functions implements Runnable{
 				result = false;
 			}
 		} catch(IOException e) {
+			try {
+				fw.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			fs.close();
 		}
 		return result;
