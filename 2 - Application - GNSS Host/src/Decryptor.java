@@ -34,7 +34,7 @@ public class Decryptor{
             String outputFile = outputDir + "\\" + originalFileName;
 
             // Decrypt and write file content
-            System.out.println("Decrypting file. Please wait...");
+            System.out.println("Decrypting " + originalFileName + ". Please wait...");
             try (OutputStream outputStream = new FileOutputStream(outputFile)) {
                 byte[] buffer = new byte[1024];
                 int bytesRead;
@@ -44,17 +44,22 @@ public class Decryptor{
                 }
                 outputStream.close();
             }
+            
+            System.out.println("[DEC] Decryption Complete!");
+            
             inputStream.close();
             cipherInputStream.close();
             dataInputStream.close();
+            
             File oldFile = new File(inputFile);
             File key = new File("encKey.txt");
             File encFiles = new File("encFiles.txt");
-            File dirFiles = new File("directories.txt");
+            //File dirFiles = new File("directories.txt");
+            
             oldFile.delete();
             key.delete();
             encFiles.delete();
-            dirFiles.delete();
+            //dirFiles.delete();
         }
     }
 }

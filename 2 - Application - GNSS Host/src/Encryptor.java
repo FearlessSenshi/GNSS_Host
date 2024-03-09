@@ -31,7 +31,7 @@ public class Encryptor{
         pw.println(encFile.toString());
         pw.close();
         
-        System.out.println("Encrypting file! Please wait...");
+        System.out.println("[ENC] Encrypting " + originalFileName + " Please wait...");
         try (InputStream inputStream = new FileInputStream(inputFile);
              OutputStream outputStream = new CipherOutputStream(new FileOutputStream(outputFile), cipher)) {
 
@@ -50,7 +50,9 @@ public class Encryptor{
             inputStream.close();
             outputStream.close();
         }
-        System.out.println("Encryption Complete!");
+        
+        System.out.println("[ENC] Encryption Complete!");
+        
         File oldFile = new File(inputFile);
         oldFile.delete();
     }

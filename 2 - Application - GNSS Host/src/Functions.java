@@ -32,6 +32,9 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -52,7 +55,7 @@ import javax.swing.filechooser.FileSystemView;
 
 public class Functions implements Runnable{
 	MainApp gui;
-	Thread t1,t2,t3,t4,t5,t6,t7,t8;
+	Thread t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
 	
 	// Window Variables
 	private static final int FRAME_WIDTH = 300;
@@ -82,21 +85,16 @@ public class Functions implements Runnable{
 	public final int MIN_PORT_RANGE = 49152;
 	public final int MAX_PORT_RANGE = 65535;
 	public boolean unlocked = true;
-	public boolean autoControl = false;
-	public boolean stopNetChk = false;
 	public boolean authFailed = false;
+	public boolean aesRunning = false;
 	public Robot rt;
 	
 	public boolean connectedToNetwork = false;
 	public boolean retryConnection = false;
-	public boolean retryConnFromDiscon = false;
 	public ArrayList<String> selectedFilepaths,loadedFilepaths;
 	
 	// Client Variables
 	public String clientID;
-	public String clientIP;
-	public String clientName;
-	public String clientAndHostRecord;
 	public boolean clientVerified = false;
 	private int attempts = 3;
 	
@@ -148,7 +146,6 @@ public class Functions implements Runnable{
 					createHost();
 					connectivity = 1;
 				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				showAuthPanel();
@@ -191,7 +188,6 @@ public class Functions implements Runnable{
 					connectivity = 0;
 					disconnect();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -204,7 +200,6 @@ public class Functions implements Runnable{
 					connectivity = 0;
 					cancelHostConnection();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -255,7 +250,6 @@ public class Functions implements Runnable{
 						System.exit(0);
 					}
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				
@@ -548,7 +542,6 @@ public class Functions implements Runnable{
                                 try {
 									Thread.sleep(3000);
 								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
                                 cs = new Socket(getDefaultGateway(), 45451);
@@ -575,7 +568,6 @@ public class Functions implements Runnable{
                 }
 				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -614,7 +606,6 @@ public class Functions implements Runnable{
 			//Socket s = new Socket(getDefaultGateway(), 1);
 			//System.out.println("Connected!");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -852,11 +843,17 @@ public class Functions implements Runnable{
 			switch(cmd) {
 			// Lock PC
 			case "1":
-				lockPC();
+				if(aesRunning)
+					System.out.println("[CMD] Cannot lock. Encryption/Decryption is in progress.");
+				else
+					lockPC();
 				break;
 			// Unlock PC
 			case "2":
-				unlockPC();
+				if(aesRunning)
+					System.out.println("[CMD] Cannot unlock. Encryption/Decryption is in progress.");
+				else
+					unlockPC();
 				break;
 			// Client Direct Disconnection
 			case "3":
@@ -909,7 +906,7 @@ public class Functions implements Runnable{
 //			}
 			
 			// 2. Encrypt Files
-			//encrypt();
+			encrypt();
 			
 			// 3. Disable selected hotkeys (loop exec)
 			disableAltKey();
@@ -947,7 +944,7 @@ public class Functions implements Runnable{
 //			}
 			
 			// 2. Decrypt Files
-			//decrypt();
+			decrypt();
 			
 			// 3. Enable hotkeys
 			t5.interrupt();
@@ -978,7 +975,6 @@ public class Functions implements Runnable{
 						p = killMgr.start();
 						Thread.sleep(1000);
 					} catch (IOException | InterruptedException e) {
-						// TODO Auto-generated catch block
 						break;
 					}
 				}
@@ -992,7 +988,6 @@ public class Functions implements Runnable{
 		try {
 			rt = new Robot();
 		} catch (AWTException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -1094,7 +1089,6 @@ public class Functions implements Runnable{
 						System.out.println("[CHK_DEVICE_CONN] " + e);
 					}
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 					try {
 						ssCon.close();
@@ -1170,7 +1164,6 @@ public class Functions implements Runnable{
 						e.printStackTrace();
 						break;
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -1356,7 +1349,6 @@ public class Functions implements Runnable{
 			try {
 				fw.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			fs.close();
@@ -1411,13 +1403,10 @@ public class Functions implements Runnable{
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -1561,68 +1550,132 @@ public class Functions implements Runnable{
 			fw.close();
 		}
 		catch (Exception e) {
-			// TODO: handle exception
+			
 		}
 	}
 	
 	// Encrypts the selected directories/files
 	private void encrypt() {
-		try {
-			Encryptor en = new Encryptor();
-			String secretKey = generateKey();
-			
-			File encDir = new File("encFiles.txt");
-	        encDir.createNewFile();
-	        
-	        File keyFile = new File("encKey.txt");
-	        keyFile.createNewFile();
-	        
-	        PrintWriter pw = new PrintWriter(new FileOutputStream("encKey.txt"));
-	        pw.println(secretKey);
-	        pw.close();
-			
-			Scanner fscan = new Scanner(new File("directories.txt"));
-			loadedFilepaths = new ArrayList<>();
-			
-			while(fscan.hasNextLine()) {
-				loadedFilepaths.add(fscan.nextLine());
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if(new File("directories.txt").exists()) {
+						if(fileIsEmpty("directories.txt")) {
+							System.out.println("[ENC] There's nothing to encrypt!");
+						}
+						else {
+							Encryptor en = new Encryptor();
+							String secretKey = generateKey();
+							
+							aesRunning = true;
+							
+							File encDir = new File("encFiles.txt");
+					        encDir.createNewFile();
+					        
+					        File keyFile = new File("encKey.txt");
+					        keyFile.createNewFile();
+					        
+					        PrintWriter pw = new PrintWriter(new FileOutputStream("encKey.txt"));
+					        pw.println(secretKey);
+					        pw.close();
+					        
+							Scanner fscan = new Scanner(new File("directories.txt"));
+							loadedFilepaths = new ArrayList<>();
+
+							while (fscan.hasNextLine()) {
+								loadedFilepaths.add(fscan.nextLine());
+							}
+							fscan.close();
+
+							for (String s : loadedFilepaths) {
+								File f = new File(s);
+								en.encryptFile(s, f.getParent(), secretKey);
+							}
+							
+							System.out.println("Process done!");
+							
+							aesRunning = false;
+						}
+					}
+					else if(!new File("directories.txt").exists()) {
+						System.out.println("[ENC] There's nothing to encrypt!");
+					}
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-			fscan.close();
-			
-			for(String s: loadedFilepaths) {
-				File f = new File(s);
-				en.encryptFile(s,f.getParent(),secretKey);
-			}
-				
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		};
+		t9 = new Thread(runnable);
+		t9.start();
 	}
 	
 	// Decrypts the encrypted files
 	private void decrypt() {
-		try {
-			Decryptor de = new Decryptor();
-			Scanner fscan = new Scanner(new File("encFiles.txt"));
-			loadedFilepaths = new ArrayList<>();
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if(new File("encFiles.txt").exists() && new File("encKey.txt").exists()) {
+						if(fileIsEmpty("encFiles.txt") || fileIsEmpty("encKey.txt")) {
+							System.out.println("[DEC] Insufficient resources. Missing enc directory or enc key.");
+						}
+						else {
+							Decryptor de = new Decryptor();
+							Scanner fscan = new Scanner(new File("encFiles.txt"));
+							loadedFilepaths = new ArrayList<>();
+							
+							aesRunning = true;
+							
+							while(fscan.hasNextLine()) {
+								loadedFilepaths.add(fscan.nextLine());
+							}
+							fscan.close();
+							fscan = new Scanner(new File("encKey.txt"));
+							String key = fscan.nextLine();
+							fscan.close();
+							for(String s: loadedFilepaths) {
+								File f = new File(s);
+								de.decryptFile(s,f.getParent(),key);
+							}
+							
+							System.out.println("[DEC] Process done!");
+							
+							aesRunning = false;
+						}
+					}
+					else if(!new File("encFiles.txt").exists() && !new File("encKey.txt").exists()) {
+						System.out.println("[DEC] There's nothing to decrypt!");
+					}
+				}
+				catch(Exception e) {
+					System.out.println("[DECRYPT] CANNOT DECRYPT AT THIS MOMENT.");
+				}
+			}
 			
-			while(fscan.hasNextLine()) {
-				loadedFilepaths.add(fscan.nextLine());
-			}
-			fscan.close();
-			fscan = new Scanner(new File("encKey.txt"));
-			String key = fscan.nextLine();
-			fscan.close();
-			for(String s: loadedFilepaths) {
-				File f = new File(s);
-				de.decryptFile(s,f.getParent(),key);
-			}
-		}
-		catch(Exception e) {
-			System.out.println("[DECRYPT] CANNOT DECRYPT AT THIS MOMENT.");
-		}
+		};
+		t10 = new Thread(runnable);
+		t10.start();
+	}
+	
+	private boolean fileIsEmpty(String inputFile) {
+		boolean result = false;
+        try {
+            Path path = Paths.get(inputFile);
+
+            if (Files.isRegularFile(path) && Files.size(path) == 0 && Files.size(path) == 0) {
+                System.out.println("[FILE_IS_EMPTY] (true) The file is empty.");
+                result = true;
+            } else {
+                System.out.println("[FILE_IS_EMPTY] (false) The file has content.");
+                result = false;
+            }
+        } catch (IOException e) {
+            System.err.println("[FILE_IS_EMPTY] Error reading the file: " + e.getMessage());
+        }
+		
+		return result;
 	}
 	
 	// Generates an 128bit alphanumerical key
