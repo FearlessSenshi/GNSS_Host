@@ -87,6 +87,8 @@ public class Functions implements Runnable{
 	public boolean unlocked = true;
 	public boolean authFailed = false;
 	public boolean aesRunning = false;
+	public boolean earlyUnlock = false;
+	public boolean earlyLock = false;
 	public Robot rt;
 	
 	public boolean connectedToNetwork = false;
@@ -850,10 +852,7 @@ public class Functions implements Runnable{
 				break;
 			// Unlock PC
 			case "2":
-				if(aesRunning)
-					System.out.println("[CMD] Cannot unlock. Encryption/Decryption is in progress.");
-				else
-					unlockPC();
+				unlockPC();
 				break;
 			// Client Direct Disconnection
 			case "3":
@@ -944,7 +943,14 @@ public class Functions implements Runnable{
 //			}
 			
 			// 2. Decrypt Files
-			decrypt();
+			if(aesRunning) {
+				// When the user unlocks the PC while encrypt() is running.
+				System.out.println("[UNLOCK PC] Early Unlock has been detected!");
+				earlyUnlock = true; // this flag will activate decrypt() after the encrypt() process.
+			}
+			else {
+				decrypt();
+			}
 			
 			// 3. Enable hotkeys
 			t5.interrupt();
@@ -1057,7 +1063,7 @@ public class Functions implements Runnable{
 									heartbeat = "DUTUM-";
 								else
 									heartbeat = "-DUTUM";
-								System.out.println(heartbeat);
+								System.out.println("[HEARTBEAT] " + heartbeat);
 								outCon.write(heartbeatMessage.getBytes());
 								outCon.flush();
 								
@@ -1375,6 +1381,7 @@ public class Functions implements Runnable{
 			if(data[0].equals("wifi")) {
 				System.out.println("[RECONN_DEVICE] PC has wifi session.");
 				
+				unlocked = false;
 				lockPC();
 				
 				gui.cardLayout.show(gui.container,"lockPanel");
@@ -1550,7 +1557,7 @@ public class Functions implements Runnable{
 			fw.close();
 		}
 		catch (Exception e) {
-			
+			System.out.println("[UPDATE_SEL_DIRS] " + e);
 		}
 	}
 	
@@ -1593,9 +1600,15 @@ public class Functions implements Runnable{
 								en.encryptFile(s, f.getParent(), secretKey);
 							}
 							
+							aesRunning = false;
+							
 							System.out.println("Process done!");
 							
-							aesRunning = false;
+							if(earlyUnlock) {
+								System.out.println("[ENC] Early unlock detected! Decrypting files!");
+								earlyUnlock = false;
+								decrypt();
+							}
 						}
 					}
 					else if(!new File("directories.txt").exists()) {
@@ -1604,6 +1617,7 @@ public class Functions implements Runnable{
 					
 				} catch (Exception e) {
 					e.printStackTrace();
+					aesRunning = false;
 				}
 			}
 		};
@@ -1650,7 +1664,9 @@ public class Functions implements Runnable{
 					}
 				}
 				catch(Exception e) {
+					aesRunning = false;
 					System.out.println("[DECRYPT] CANNOT DECRYPT AT THIS MOMENT.");
+					System.out.println(e);
 				}
 			}
 			
@@ -1665,10 +1681,10 @@ public class Functions implements Runnable{
             Path path = Paths.get(inputFile);
 
             if (Files.isRegularFile(path) && Files.size(path) == 0 && Files.size(path) == 0) {
-                System.out.println("[FILE_IS_EMPTY] (true) The file is empty.");
+                System.out.println("[FILE_IS_EMPTY] (true) " + inputFile + " is empty.");
                 result = true;
             } else {
-                System.out.println("[FILE_IS_EMPTY] (false) The file has content.");
+                System.out.println("[FILE_IS_EMPTY] (false) " + inputFile + " has content.");
                 result = false;
             }
         } catch (IOException e) {
