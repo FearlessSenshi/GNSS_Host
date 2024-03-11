@@ -694,26 +694,35 @@ public class Functions implements Runnable{
 		// If the connecting device has an existing ID
 		else if(!newConnection) {
 			try {
-				boolean exists = false;
-				fs = new Scanner(file);
-				while(fs.hasNextLine()) {
-					regID = fs.nextLine();
-					if(regID.equals(cID)) {
-						exists = true;
-						break;
+				if(file.exists()) {
+					boolean exists = false;
+					fs = new Scanner(file);
+					while(fs.hasNextLine()) {
+						regID = fs.nextLine();
+						if(regID.equals(cID)) {
+							exists = true;
+							break;
+						}
+						else {
+							exists = false;
+						}
+					}
+					fs.close();
+					if(!exists) {
+						fw = new FileWriter(file,true);
+						fw.write(cID + "\n");
+						fw.close();
 					}
 					else {
-						exists = false;
+						System.out.println("[SEND_CLIENT_IDS] Client has been previouslly registered!");
 					}
 				}
-				fs.close();
-				if(!exists) {
+				else {
+					file.createNewFile();
 					fw = new FileWriter(file,true);
 					fw.write(cID + "\n");
 					fw.close();
-				}
-				else {
-					System.out.println("[SEND_CLIENT_IDS] Client Already Registered!");
+					System.out.println("[SEND_CLIENT_IDS] New Client Registered!");
 				}
 			}
 			catch (IOException e) {
