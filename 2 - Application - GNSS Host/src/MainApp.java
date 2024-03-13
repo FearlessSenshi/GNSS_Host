@@ -258,9 +258,8 @@ public class MainApp extends JFrame {
 		btnHotspot.setFocusable(false);
 		btnHotspot.setBorderPainted(false);
 		btnHotspot.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
-		btnHotspot.setBackground(new Color(50, 50, 50)); // set to 0, 202, 0
+		btnHotspot.setBackground(new Color(0, 202, 0)); // set to 0, 202, 0
 		btnHotspot.setBounds(311, 329, 167, 53);
-		btnHotspot.setEnabled(false); // remove this code when done developing this feature
 		createHostPanel.add(btnHotspot);
 		
 		encSetupBtn = new JButton("...");

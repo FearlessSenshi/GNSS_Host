@@ -51,7 +51,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-13-2024 1946
+//		DT  : 03-14-2024 0200
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -567,6 +567,9 @@ public class Functions implements Runnable{
 								cs.close();
                                 pw.close();
                                 br.close();
+                                createRecoveryKey();
+                                updateStatus("yes");
+                                
                                 try {
 									Thread.sleep(2000);
 								} catch (InterruptedException e) {
@@ -631,8 +634,6 @@ public class Functions implements Runnable{
 			System.out.println("[JOIN_HS] Connecting to hotspot...");
 			t1 = new Thread(this);
 			t1.start();
-			//Socket s = new Socket(getDefaultGateway(), 1);
-			//System.out.println("Connected!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
