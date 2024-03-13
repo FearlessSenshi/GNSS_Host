@@ -24,6 +24,8 @@ import javax.swing.SwingUtilities;
 
 import java.awt.Dimension;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+
 import java.awt.CardLayout;
 import javax.swing.border.BevelBorder;
 import java.awt.event.ActionListener;
@@ -57,10 +59,10 @@ public class MainApp extends JFrame {
 	public JLabel dialog1;
 	public JButton createBtn;
 	
-	public JFrame encSetupFrame;
+	public JDialog encSetupFrame;
 	public JPanel encryptionSetupPanel;
 	public JList filepathList;
-	public JButton encSetupBtn,addBtn,removeBtn,removeAllBtn,okBtn;
+	public JButton addBtn,removeBtn,removeAllBtn,okBtn;
 	public DefaultListModel<String> listModel;
 	
 	public JPanel authPanel;
@@ -103,6 +105,7 @@ public class MainApp extends JFrame {
 	public JButton recoveryBtn;
 	public JButton cancelRecoveryBtn;
 	public JButton recoverBtn;
+	public JButton encSetupBtn;
 	
 	public JTextField uniquePasscodeInput;
 	
@@ -214,7 +217,7 @@ public class MainApp extends JFrame {
 	    
 	    // Create Host Panel
 		createHostPanel = new JPanel();
-		createHostPanel.setBackground(new Color(15, 15, 15));
+		createHostPanel.setBackground(new Color(30, 30, 30));
 		container.add(createHostPanel, "hostPanel");
 		createHostPanel.setLayout(null);
 
@@ -255,15 +258,25 @@ public class MainApp extends JFrame {
 		btnHotspot.setFocusable(false);
 		btnHotspot.setBorderPainted(false);
 		btnHotspot.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
-		btnHotspot.setBackground(new Color(0, 202, 0));
+		btnHotspot.setBackground(new Color(50, 50, 50)); // set to 0, 202, 0
 		btnHotspot.setBounds(311, 329, 167, 53);
+		btnHotspot.setEnabled(false); // remove this code when done developing this feature
 		createHostPanel.add(btnHotspot);
 		
+		encSetupBtn = new JButton("...");
+		encSetupBtn.setForeground(new Color(255, 255, 255));
+		encSetupBtn.setFont(new Font("Tahoma", Font.BOLD, 13));
+		encSetupBtn.setFocusable(false);
+		encSetupBtn.setBorderPainted(false);
+		encSetupBtn.setBackground(new Color(0, 121, 0));
+		encSetupBtn.setBounds(4, 47, 28, 23);
+		createHostPanel.add(encSetupBtn);
+		
 		// Encryption Setup Panel
-		encSetupFrame = new JFrame();
+		encSetupFrame = new JDialog();
 		encSetupFrame.setTitle("Encryption Setup");
 		encSetupFrame.setSize(700,400);
-		encSetupFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		encSetupFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		encSetupFrame.setLocationRelativeTo(null);
 		
 		encryptionSetupPanel = new JPanel();
@@ -287,15 +300,15 @@ public class MainApp extends JFrame {
 		encryptionSetupPanel.add(sc);
 		
 		addBtn = new JButton("ADD");
-		addBtn.setBounds(258, 306, 89, 23);
+		addBtn.setBounds(228, 306, 89, 23);
 		encryptionSetupPanel.add(addBtn);
 		
 		removeBtn = new JButton("REMOVE");
-		removeBtn.setBounds(357, 306, 89, 23);
+		removeBtn.setBounds(327, 306, 89, 23);
 		encryptionSetupPanel.add(removeBtn);
 		
 		removeAllBtn = new JButton("REMOVE ALL");
-		removeAllBtn.setBounds(456, 306, 107, 23);
+		removeAllBtn.setBounds(426, 306, 137, 23);
 		encryptionSetupPanel.add(removeAllBtn);
 		
 		okBtn = new JButton("OK");
@@ -305,7 +318,7 @@ public class MainApp extends JFrame {
 		// Authentication Panel
 		authPanel = new JPanel();
 		authPanel.setFocusable(false);
-		authPanel.setBackground(new Color(15, 15, 15));
+		authPanel.setBackground(new Color(30, 30, 30));
 		container.add(authPanel, "authPanel");
 		authPanel.setLayout(null);
 
@@ -386,11 +399,6 @@ public class MainApp extends JFrame {
 		hostIPLabel.setBounds(232, 239, 318, 37);
 		authPanel.add(hostIPLabel);
 		
-		encSetupBtn = new JButton("encSetup");
-		encSetupBtn.setBounds(28, 75, 89, 23);
-		
-		authPanel.add(encSetupBtn);
-		
 		lblRecoveryKey = new JLabel("Recovery Key: ");
 		lblRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
 		lblRecoveryKey.setForeground(Color.WHITE);
@@ -407,7 +415,7 @@ public class MainApp extends JFrame {
 		
 		// Connection Status Panel
 		connectStatusPanel = new JPanel();
-		connectStatusPanel.setBackground(new Color(15, 15, 15));
+		connectStatusPanel.setBackground(new Color(30, 30, 30));
 		container.add(connectStatusPanel, "connectStatusPanel");
 		connectStatusPanel.setLayout(null);
 
@@ -442,7 +450,7 @@ public class MainApp extends JFrame {
 		connectStatusPanel.add(connectedToLbl);
 		
 		connectToHostPanel = new JPanel();
-		connectToHostPanel.setBackground(new Color(15, 15, 15));
+		connectToHostPanel.setBackground(new Color(30, 30, 30));
 		container.add(connectToHostPanel, "connectToHostPanel");
 		connectToHostPanel.setLayout(null);
 		

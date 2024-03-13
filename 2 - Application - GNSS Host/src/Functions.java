@@ -51,7 +51,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-09-2024 2254
+//		DT  : 03-13-2024 1946
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -135,7 +135,7 @@ public class Functions implements Runnable{
 		exitExp = new ProcessBuilder("taskkill", "/F", "/IM", "explorer.exe"); // exits explorer.exe (file explorer and the taskbar)
 		openExp = new ProcessBuilder("explorer.exe"); // opens explorer.exe (file explorer and the taskbar)
 		
-		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", appPath, "/SC", "ONLOGON");
+		createTask = new ProcessBuilder("schtasks", "/Create", "/TN", "NetSecuritySystem", "/TR", appPath, "/SC", "ONLOGON", "/RL", "HIGHEST");
 		removeTask = new ProcessBuilder("schtasks", "/Delete", "/TN", "NetSecuritySystem", "/F");
 		
 		killMgr = new ProcessBuilder("taskkill", "/F", "/IM", "taskmgr.exe");
@@ -211,6 +211,7 @@ public class Functions implements Runnable{
 		gui.encSetupBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				gui.setEnabled(false);
 				gui.encSetupFrame.setVisible(true);
 				loadDirectories();
 				gui.repaint();
@@ -291,6 +292,10 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				gui.listModel.clear();
 				gui.encSetupFrame.dispose();
+				gui.setAlwaysOnTop(true);
+				gui.setAlwaysOnTop(false);
+				gui.setEnabled(true);
+				gui.repaint();
 			}
 		});
 		
@@ -923,11 +928,11 @@ public class Functions implements Runnable{
 			disableTaskMgr();
 			
 			// 5. Enable application to open on startup (exec once)
-//			try {
-//				p = createTask.start();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
+			try {
+				p = createTask.start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		else {
 			System.out.println("[LOCK PC] Device is already locked!");
@@ -962,18 +967,21 @@ public class Functions implements Runnable{
 			}
 			
 			// 3. Enable hotkeys
-			t5.interrupt();
+			if(t5.isAlive())
+				t5.interrupt();
 			
 			// 4. Enable taskmanager when opened
-			t4.interrupt();
-			System.out.println("[UNLOCK PC] Taskmanager killer has stopped.");
+			if(t4.isAlive()) {
+				t4.interrupt();
+				System.out.println("[UNLOCK PC] Taskmanager killer has stopped.");
+			}
 			
 			// 5. Remove application to open on startup
-//			try {
-//				p = removeTask.start();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
+			try {
+				p = removeTask.start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		else {
 			System.out.println("[UNLOCK PC] Device is already unlocked!");
@@ -1390,7 +1398,6 @@ public class Functions implements Runnable{
 			if(data[0].equals("wifi")) {
 				System.out.println("[RECONN_DEVICE] PC has wifi session.");
 				
-				unlocked = false;
 				lockPC();
 				
 				gui.cardLayout.show(gui.container,"lockPanel");
