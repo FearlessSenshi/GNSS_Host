@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -51,7 +52,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-14-2024 0200
+//		DT  : 03-14-2024 0347
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -1301,8 +1302,9 @@ public class Functions implements Runnable{
 							pw = new PrintWriter(out, true);
 						}
 						else if(connectivity == 2) {
-							cs = new Socket(getDefaultGateway(),45451);
-							//cs.setSoTimeout(1000);
+							cs = new Socket();
+							cs.connect(new InetSocketAddress(getDefaultGateway(),45451));
+							cs.setSoTimeout(5000);
 							br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
 							pw = new PrintWriter(cs.getOutputStream(), true);
 						}
