@@ -514,11 +514,32 @@ public class Functions implements Runnable{
 		}
 		else if(connectivity == 2) {
 			try {
+				
+				clientID = generateClientDeviceID();
+				recoveryKey = generateRecoveryKey();
+				gui.generatedRecoveryKey.setText(recoveryKey);
+				
+				if(chkHostID()) {
+					hostIDFile = new File("myID.txt");
+					Scanner fs = new Scanner(hostIDFile);
+					hostDetails = fs.nextLine();
+					fs.close();
+				}
+				else {
+					hostDetails = generateHostDeviceDetails("hotspot");
+					File file = new File("myID.txt");
+					FileWriter fw = new FileWriter(file);
+					fw.write(hostDetails + "\n");
+					fw.close();
+				}
+				
 				hotspotPasscode = Integer.parseInt(gui.passcodeInput.getText());
 				cs = new Socket(getDefaultGateway(), 45451);
 				System.out.println("Connected!");
+				
 				pw = new PrintWriter(cs.getOutputStream(), true);
 	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+	            
 	            System.out.println("connectVerifyFromHotspot" + hotspotPasscode);
 	            pw.println("connectVerifyFromHotspot" + hotspotPasscode);
 	            while (true) {
@@ -538,7 +559,7 @@ public class Functions implements Runnable{
                                 br.close();
                                 break;
                             } else if (message.equals("gnssVerified"+hotspotPasscode)) {
-                                System.out.println("[HS_MODE] Successful Connection");
+                                System.out.println("[HS_MODE] Successful Connection! Disconnecting auth bridge...");
                                 clientVerified = true;
                                 gui.cardLayout.show(gui.container, "connectStatusPanel");
 								gui.repaint();
@@ -547,12 +568,12 @@ public class Functions implements Runnable{
                                 pw.close();
                                 br.close();
                                 try {
-									Thread.sleep(3000);
+									Thread.sleep(2000);
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
                                 cs = new Socket(getDefaultGateway(), 45451);
-                				System.out.println("Connected! Again!");
+                				System.out.println("[HS_MODE] Connected Again!");
                 				pw = new PrintWriter(cs.getOutputStream(), true);
                 	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
                                 runInputListener(br);
@@ -719,7 +740,7 @@ public class Functions implements Runnable{
 						fw.close();
 					}
 					else {
-						System.out.println("[SEND_CLIENT_IDS] Client has been previouslly registered!");
+						System.out.println("[SEND_CLIENT_IDS] Client has been previously registered!");
 					}
 				}
 				else {
@@ -759,7 +780,8 @@ public class Functions implements Runnable{
 	
 	// Generates a random host ID
 	private String generateHostDeviceDetails(String connectivity) {
-		// Generate ID
+		String hostDeviceDetails = null;
+		
 		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new Random();
         StringBuilder sb = new StringBuilder(11);
@@ -768,8 +790,18 @@ public class Functions implements Runnable{
             int index = random.nextInt(characters.length());
             sb.append(characters.charAt(index));
         }
-        
-        return connectivity + "|" + String.valueOf(hostIP) + "|" + String.valueOf(serverPort) + "|" + sb.toString();
+		
+		// Generate ID
+		if(connectivity.equals("wifi")) {
+	        hostDeviceDetails = connectivity + "|" + String.valueOf(hostIP) + "|" + String.valueOf(serverPort) + "|" + sb.toString();
+		}
+		else if(connectivity.equals("hotspot")) {
+			hostDeviceDetails = connectivity + "|" + sb.toString();
+		}
+		else {
+			System.out.println("[GEN_HOST_ID] Invalid connectivity!");
+		}
+		return hostDeviceDetails;
 	}
 	
 	// Generates a random port
@@ -919,7 +951,7 @@ public class Functions implements Runnable{
 //			}
 			
 			// 2. Encrypt Files
-			encrypt();
+			//encrypt();
 			
 			// 3. Disable selected hotkeys (loop exec)
 			disableAltKey();
@@ -963,7 +995,7 @@ public class Functions implements Runnable{
 				earlyUnlock = true; // this flag will activate decrypt() after the encrypt() process.
 			}
 			else {
-				decrypt();
+				// decrypt();
 			}
 			
 			// 3. Enable hotkeys
