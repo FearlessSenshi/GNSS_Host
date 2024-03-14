@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -1470,7 +1471,9 @@ public class Functions implements Runnable{
 				connectivity = 2;
 				
 				while(true) {
-					cs = new Socket(getDefaultGateway(), 45451);
+					cs = new Socket();
+					cs.connect(new InetSocketAddress(getDefaultGateway(),45451),3000);
+					cs.setSoTimeout(2000);
 					
 					if(cs.isConnected()) {
 						unlockPC();
