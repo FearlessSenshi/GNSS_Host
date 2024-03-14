@@ -1484,6 +1484,7 @@ public class Functions implements Runnable{
 			    		runInputListener(br);
 						chkNetworkConnection();
 						chkDeviceConnection();
+						break;
 					}
 				}
 			}
