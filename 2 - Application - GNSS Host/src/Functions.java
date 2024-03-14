@@ -1495,6 +1495,12 @@ public class Functions implements Runnable{
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			try {
+				cs.close();
+				System.out.println("[RECONN_DEVICE] Socket closed."); // This log may show at hotspot sessions
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
