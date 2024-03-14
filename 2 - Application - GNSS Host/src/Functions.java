@@ -1490,7 +1490,7 @@ public class Functions implements Runnable{
 				try {
 					cs = new Socket();
 					cs.connect(new InetSocketAddress(getDefaultGateway(), 45451), 3000);
-					cs.setSoTimeout(2000);
+					//cs.setSoTimeout(2000);
 
 					if (cs.isConnected()) {
 						unlockPC();
