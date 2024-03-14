@@ -1469,20 +1469,22 @@ public class Functions implements Runnable{
 				
 				connectivity = 2;
 				
-				cs = new Socket(getDefaultGateway(), 45451);
-				
-				if(cs.isConnected()) {
-					unlockPC();
-					clientVerified = true;
+				while(true) {
+					cs = new Socket(getDefaultGateway(), 45451);
 					
-					pw = new PrintWriter(out,true);
-		    		br = new BufferedReader(new InputStreamReader(is));
-		    		
-		    		Thread.sleep(2000);
-		    		
-		    		runInputListener(br);
-					chkNetworkConnection();
-					chkDeviceConnection();
+					if(cs.isConnected()) {
+						unlockPC();
+						clientVerified = true;
+						
+						pw = new PrintWriter(out,true);
+			    		br = new BufferedReader(new InputStreamReader(is));
+			    		
+			    		Thread.sleep(2000);
+			    		
+			    		runInputListener(br);
+						chkNetworkConnection();
+						chkDeviceConnection();
+					}
 				}
 			}
 			
