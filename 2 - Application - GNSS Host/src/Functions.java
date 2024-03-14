@@ -1427,6 +1427,7 @@ public class Functions implements Runnable{
 			fs = new Scanner(new File("myID.txt"));
 			String[] data = fs.nextLine().split("\\|");
 			fs.close();
+			
 			// Initialize WIFI SOCKETS
 			if(data[0].equals("wifi")) {
 				System.out.println("[RECONN_DEVICE] PC has wifi session.");
@@ -1458,6 +1459,33 @@ public class Functions implements Runnable{
 					chkDeviceConnection();
 				}
 			}
+			
+			// Initialize HOTSPOT SOCKETS
+			else if(data[0].equals("hotspot")) {
+				System.out.println("[RECONN_DEVICE] PC has hotspot session.");
+				
+				lockPC();
+				gui.cardLayout.show(gui.container,"lockPanel");
+				
+				connectivity = 2;
+				
+				cs = new Socket(getDefaultGateway(), 45451);
+				
+				if(cs.isConnected()) {
+					unlockPC();
+					clientVerified = true;
+					
+					pw = new PrintWriter(out,true);
+		    		br = new BufferedReader(new InputStreamReader(is));
+		    		
+		    		Thread.sleep(2000);
+		    		
+		    		runInputListener(br);
+					chkNetworkConnection();
+					chkDeviceConnection();
+				}
+			}
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
