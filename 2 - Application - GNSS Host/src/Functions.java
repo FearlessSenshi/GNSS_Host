@@ -1496,8 +1496,8 @@ public class Functions implements Runnable{
 						unlockPC();
 						clientVerified = true;
 
-						pw = new PrintWriter(out, true);
-						br = new BufferedReader(new InputStreamReader(is));
+						pw = new PrintWriter(cs.getOutputStream(), true);
+        	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
 
 						Thread.sleep(2000);
 
