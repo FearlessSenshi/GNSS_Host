@@ -1424,88 +1424,101 @@ public class Functions implements Runnable{
 	
 	private void reconnectToDevice() {
 		Scanner fs = null;
+		String[] data = null;
 		try {
 			fs = new Scanner(new File("myID.txt"));
-			String[] data = fs.nextLine().split("\\|");
+			data = fs.nextLine().split("\\|");
 			fs.close();
 			
-			// Initialize WIFI SOCKETS
-			if(data[0].equals("wifi")) {
+		} 
+		catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// Initialize WIFI SOCKETS
+		if (data[0].equals("wifi")) {
+			try {
 				System.out.println("[RECONN_DEVICE] PC has wifi session.");
-				
+
 				lockPC();
-				
-				gui.cardLayout.show(gui.container,"lockPanel");
+
+				gui.cardLayout.show(gui.container, "lockPanel");
 				InetAddress inetAddress = InetAddress.getLocalHost();
 				hostIP = inetAddress.getLocalHost().getHostAddress();
 				hostName = inetAddress.getLocalHost().getHostName();
 				gui.hostIPHostName.setText(hostIP + " - " + hostName);
-				
+
 				connectivity = 1;
 				serverPort = Integer.valueOf(data[2]);
-				
+
 				ss = new ServerSocket(serverPort);
 				cs = new Socket();
 				cs = ss.accept();
-				if(cs.isConnected()) {
+				if (cs.isConnected()) {
 					unlockPC();
 					clientVerified = true;
 					is = cs.getInputStream();
-		    		br = new BufferedReader(new InputStreamReader(is));
-		    		out = cs.getOutputStream();
-		    		pw = new PrintWriter(out,true);
-		    		Thread.sleep(2000);
-		    		runInputListener(br);
+					br = new BufferedReader(new InputStreamReader(is));
+					out = cs.getOutputStream();
+					pw = new PrintWriter(out, true);
+					Thread.sleep(2000);
+					runInputListener(br);
 					chkNetworkConnection();
 					chkDeviceConnection();
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			
-			// Initialize HOTSPOT SOCKETS
-			else if(data[0].equals("hotspot")) {
-				System.out.println("[RECONN_DEVICE] PC has hotspot session.");
-				
-				lockPC();
-				gui.cardLayout.show(gui.container,"lockPanel");
-				
-				connectivity = 2;
-				
-				while(true) {
+
+		}
+
+		// Initialize HOTSPOT SOCKETS
+		else if (data[0].equals("hotspot")) {
+			System.out.println("[RECONN_DEVICE] PC has hotspot session.");
+
+			lockPC();
+			gui.cardLayout.show(gui.container, "lockPanel");
+
+			connectivity = 2;
+
+			while (true) {
+				try {
 					cs = new Socket();
-					cs.connect(new InetSocketAddress(getDefaultGateway(),45451),3000);
+					cs.connect(new InetSocketAddress(getDefaultGateway(), 45451), 3000);
 					cs.setSoTimeout(2000);
-					
-					if(cs.isConnected()) {
+
+					if (cs.isConnected()) {
 						unlockPC();
 						clientVerified = true;
-						
-						pw = new PrintWriter(out,true);
-			    		br = new BufferedReader(new InputStreamReader(is));
-			    		
-			    		Thread.sleep(2000);
-			    		
-			    		runInputListener(br);
+
+						pw = new PrintWriter(out, true);
+						br = new BufferedReader(new InputStreamReader(is));
+
+						Thread.sleep(2000);
+
+						runInputListener(br);
 						chkNetworkConnection();
 						chkDeviceConnection();
 						break;
 					}
+				} catch (IOException e) {
+					try {
+						cs.close();
+						System.out.println("[RECONN_DEVICE] Socket closed.");
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			try {
-				cs.close();
-				System.out.println("[RECONN_DEVICE] Socket closed."); // This log may show at hotspot sessions
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
-		
 	}
 	
 	// Gets the directories to encrypt
