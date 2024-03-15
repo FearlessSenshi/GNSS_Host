@@ -168,6 +168,37 @@ public class Functions implements Runnable{
 				connectivity = 2;
 				gui.cardLayout.show(gui.container, "connectToHostPanel");
 				gui.repaint();
+				try {
+					if(chkHostID()) {
+						hostIDFile = new File("myID.txt");
+						Scanner fs = new Scanner(hostIDFile);
+						hostDetails = fs.nextLine();
+						fs.close();
+						
+						if(hostDetails.contains("wifi|")) {
+							hostDetails = generateHostDeviceDetails("hotspot");
+							File file = new File("myID.txt");
+							FileWriter fw = new FileWriter(file);
+							fw.write(hostDetails + "\n");
+							fw.close();
+						}
+						else if(hostDetails.contains("hotspot|")) {
+							// continue
+						}
+						
+					}
+					else {
+						hostDetails = generateHostDeviceDetails("hotspot");
+						File file = new File("myID.txt");
+						FileWriter fw = new FileWriter(file);
+						fw.write(hostDetails + "\n");
+						fw.close();
+					}
+				}
+				catch(IOException e1) {
+					System.out.println("[BTN_HOTSPOT]");
+				}
+				
 				System.out.println(getDefaultGateway());
 			}
 		});
@@ -383,15 +414,24 @@ public class Functions implements Runnable{
 							hostDetails = fs.nextLine();
 							fs.close();
 							
-							FileWriter fw = new FileWriter(hostIDFile);
-							String[] data = hostDetails.split("\\|");
-							data[2] = String.valueOf(serverPort);
-							fw.write(data[0]+"|"+data[1]+"|"+data[2]+"|"+data[3]+"\n");
-							fw.close();
-							
-							fs = new Scanner(hostIDFile);
-							hostDetails = fs.nextLine();
-							fs.close();
+							if(hostDetails.contains("wifi|")) {
+								FileWriter fw = new FileWriter(hostIDFile);
+								String[] data = hostDetails.split("\\|");
+								data[2] = String.valueOf(serverPort);
+								fw.write(data[0]+"|"+data[1]+"|"+data[2]+"|"+data[3]+"\n"); // replace with newly generated port
+								fw.close();
+								
+								fs = new Scanner(hostIDFile);
+								hostDetails = fs.nextLine();
+								fs.close();
+							}
+							else if(hostDetails.contains("hotspot|")) {
+								hostDetails = generateHostDeviceDetails("wifi");
+								File file = new File("myID.txt");
+								FileWriter fw = new FileWriter(file);
+								fw.write(hostDetails + "\n");
+								fw.close();
+							}
 						}
 						else {
 							hostDetails = generateHostDeviceDetails("wifi");
@@ -519,20 +559,6 @@ public class Functions implements Runnable{
 				clientID = generateClientDeviceID();
 				recoveryKey = generateRecoveryKey();
 				gui.generatedRecoveryKey.setText(recoveryKey);
-				
-				if(chkHostID()) {
-					hostIDFile = new File("myID.txt");
-					Scanner fs = new Scanner(hostIDFile);
-					hostDetails = fs.nextLine();
-					fs.close();
-				}
-				else {
-					hostDetails = generateHostDeviceDetails("hotspot");
-					File file = new File("myID.txt");
-					FileWriter fw = new FileWriter(file);
-					fw.write(hostDetails + "\n");
-					fw.close();
-				}
 				
 				hotspotPasscode = Integer.parseInt(gui.passcodeInput.getText());
 				cs = new Socket(getDefaultGateway(), 45451);
