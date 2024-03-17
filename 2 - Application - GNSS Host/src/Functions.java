@@ -1277,13 +1277,21 @@ public class Functions implements Runnable{
 	
 	// Closes the socket connection, therefore two devices will disconnect
 	private void disconnect() throws IOException {
+		
 		File file = new File("directories.txt");
+		file.delete();
+		
 		updateStatus("no");
+		
 		System.out.println("[DC] Disconnecting!");
+		
 		gui.cardLayout.show(gui.container, "hostPanel");
 		gui.repaint();
+		
 		clientVerified = false;
+		
 		pw.println("disconnect");
+		
 		t6.interrupt(); // chkDeviceConnection
 		t7.interrupt(); // chkNetworkConnection
 		if(t8 != null)
