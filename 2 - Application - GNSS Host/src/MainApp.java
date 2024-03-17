@@ -45,6 +45,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
@@ -66,6 +67,9 @@ public class MainApp extends JFrame {
 	public JList filepathList;
 	public JButton addBtn,removeBtn,removeAllBtn,okBtn;
 	public DefaultListModel<String> listModel;
+	public JOptionPane decProcessing;
+	public JOptionPane decFinished;
+	public JDialog dialog;
 	
 	public JPanel authPanel;
 	public JLabel titleLabel_1;
@@ -286,6 +290,7 @@ public class MainApp extends JFrame {
 		encSetupFrame.setTitle("Encryption Setup");
 		encSetupFrame.setSize(700,400);
 		encSetupFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		encSetupFrame.setAlwaysOnTop(true);
 		encSetupFrame.setLocationRelativeTo(null);
 		
 		encryptionSetupPanel = new JPanel();
@@ -323,6 +328,10 @@ public class MainApp extends JFrame {
 		okBtn = new JButton("OK");
 		okBtn.setBounds(573, 306, 89, 23);
 		encryptionSetupPanel.add(okBtn);
+		
+		decProcessing = new JOptionPane("Decrypting files. Do not exit the app.", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+		dialog = decProcessing.createDialog(null, "Decryption Process");
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		
 		// Authentication Panel
 		authPanel = new JPanel();
@@ -510,7 +519,7 @@ public class MainApp extends JFrame {
 		// Lock Screen
 		w = new JFrame();
 		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
-		w.setUndecorated(true);
+		//w.setUndecorated(true);
 		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
 		w.setLocationRelativeTo(null);
 		

@@ -52,7 +52,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-16-2024 0527
+//		DT  : 03-18-2024 0408
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -90,6 +90,7 @@ public class Functions implements Runnable{
 	public boolean aesRunning = false;
 	public boolean earlyUnlock = false;
 	public boolean earlyLock = false;
+	public boolean displayFinishDialog = false;
 	public Robot rt;
 	
 	public boolean connectedToNetwork = false;
@@ -271,8 +272,12 @@ public class Functions implements Runnable{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					if(chkRecoveryKey()) {
+						displayFinishDialog = true;
+						displayUnclosingDialog();
+						decrypt();
 						gui.w.dispose();
 						gui.dispose();
+						
 						updateStatus("no");
 						if(!unlocked) {
 							try {
@@ -282,7 +287,8 @@ public class Functions implements Runnable{
 								e1.printStackTrace();
 							}
 						}
-						System.exit(0);
+						connectivity = 0;
+						disconnect();
 					}
 				} catch (IOException e1) {
 					e1.printStackTrace();
@@ -347,6 +353,7 @@ public class Functions implements Runnable{
 							e1.printStackTrace();
 						}
 					}
+					
 					System.exit(0);
 				}
 			}
@@ -965,7 +972,7 @@ public class Functions implements Runnable{
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			// gui.inputStatusLbl.setVisible(false);
-			// gui.w.setVisible(true);
+			gui.w.setVisible(true);
 			//gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
@@ -979,7 +986,7 @@ public class Functions implements Runnable{
 //			}
 			
 			// 2. Encrypt Files
-			//encrypt();
+			encrypt();
 			
 			// 3. Disable selected hotkeys (loop exec)
 			disableAltKey();
@@ -1023,7 +1030,7 @@ public class Functions implements Runnable{
 				earlyUnlock = true; // this flag will activate decrypt() after the encrypt() process.
 			}
 			else {
-				// decrypt();
+				decrypt();
 			}
 			
 			// 3. Enable hotkeys
@@ -1270,6 +1277,7 @@ public class Functions implements Runnable{
 	
 	// Closes the socket connection, therefore two devices will disconnect
 	private void disconnect() throws IOException {
+		File file = new File("directories.txt");
 		updateStatus("no");
 		System.out.println("[DC] Disconnecting!");
 		gui.cardLayout.show(gui.container, "hostPanel");
@@ -1633,6 +1641,7 @@ public class Functions implements Runnable{
 	// Gets the directories to encrypt
 	private void getDirectories() {
 		// Create a file chooser
+		gui.encSetupFrame.setAlwaysOnTop(false);
         JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
         fileChooser.setDialogTitle("Choose directories");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -1662,6 +1671,7 @@ public class Functions implements Runnable{
         } else {
             System.out.println("[GET_DIR] No directories selected.");
         }
+        gui.encSetupFrame.setAlwaysOnTop(true);
 	}
 	
 	// Saving the directories to a flatfile
@@ -1841,6 +1851,7 @@ public class Functions implements Runnable{
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
+				
 				try {
 					if(new File("encFiles.txt").exists() && new File("encKey.txt").exists()) {
 						if(fileIsEmpty("encFiles.txt") || fileIsEmpty("encKey.txt")) {
@@ -1868,10 +1879,33 @@ public class Functions implements Runnable{
 							System.out.println("[DEC] Process done!");
 							
 							aesRunning = false;
+							
+							if(displayFinishDialog) {
+								displayFinishDialog = false;
+								
+								gui.dialog.dispose();
+								gui.w.dispose();
+								gui.dispose();
+								
+								JOptionPane.showMessageDialog(null, "Decryption complete. You may use your device again.", "Decryption Process", JOptionPane.INFORMATION_MESSAGE);
+								
+								System.exit(0);
+							}
 						}
 					}
 					else if(!new File("encFiles.txt").exists() && !new File("encKey.txt").exists()) {
 						System.out.println("[DEC] There's nothing to decrypt!");
+						if(displayFinishDialog) {
+							displayFinishDialog = false;
+							
+							gui.dialog.dispose();
+							gui.w.dispose();
+							gui.dispose();
+							
+							JOptionPane.showMessageDialog(null, "Device recovered! You may use your device again.", "Recovery Mode", JOptionPane.INFORMATION_MESSAGE);
+							
+							System.exit(0);
+						}
 					}
 				}
 				catch(Exception e) {
@@ -1884,6 +1918,20 @@ public class Functions implements Runnable{
 		};
 		t10 = new Thread(runnable);
 		t10.start();
+	}
+	
+	private void displayUnclosingDialog() {
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				if(displayFinishDialog)
+					gui.dialog.setVisible(true);
+			}
+			
+		};
+		Thread t = new Thread(runnable);
+		t.start();
 	}
 	
 	private boolean fileIsEmpty(String inputFile) {
