@@ -660,7 +660,7 @@ public class Functions implements Runnable{
 		try {
 			System.out.println("[JOIN_HS] Connecting to hotspot...");
 			t1 = new Thread(this);
-			t1.start();
+			t1.start(); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1335,15 +1335,31 @@ public class Functions implements Runnable{
 						}
 						
 						if (cs.isConnected()) {
-							System.out.println("[CREATE_CONN] Server has connected to client successfully!");
-							unlockPC();
-							runInputListener(br);
-							chkDeviceConnection();
-							if(connectivity == 2) {
-								chkNetworkConnection();
+							String message = br.readLine();
+							
+							System.out.println("[CREATE_CONN] Connected! Authenticating client...");
+							if(message.contains("gnssReconnect|")) {
+								String[] data = message.split("\\|");
+								if(isIDVerified(data[1])) {
+									System.out.println(data[1]);
+									System.out.println("[CREATE_CONN] Server has connected to client successfully!");
+									Thread.sleep(1000);
+									unlockPC();
+									runInputListener(br);
+									chkDeviceConnection();
+									if(connectivity == 2) {
+										chkNetworkConnection();
+									}
+									pw.println("gnssReconnectSuccess");
+									break;
+								}
+								else {
+									pw.println("gnssReconnectFailed");
+									System.out.println("[CREATE_CONN] Authentication failed. Unknown device attempts to reconnect.");
+								}
 							}
-							break;
 						}
+						
 					} catch (IOException e) {
 						try {
 							if(connectivity == 1) {
@@ -1377,6 +1393,30 @@ public class Functions implements Runnable{
 		};
 		t8 = new Thread(r);
 		t8.start();
+	}
+	
+	private boolean isIDVerified(String ID) {
+		boolean result = false;
+		
+		File file = new File("deviceList.txt");
+		try {
+			Scanner scan = new Scanner(file);
+			
+			
+			while(scan.hasNextLine()) {
+				String scannedID = scan.nextLine();
+				if(ID.equals(scannedID)) {
+					result = true;
+				}
+				
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println("[VER_ID] File not found.");
+			result = false;
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 	
 	// Checks if inputted recovery key is valid
@@ -1470,31 +1510,52 @@ public class Functions implements Runnable{
 				System.out.println("[RECONN_DEVICE] PC has wifi session.");
 
 				lockPC();
-
+				
 				gui.cardLayout.show(gui.container, "lockPanel");
 				InetAddress inetAddress = InetAddress.getLocalHost();
 				hostIP = inetAddress.getLocalHost().getHostAddress();
 				hostName = inetAddress.getLocalHost().getHostName();
 				gui.hostIPHostName.setText(hostIP + " - " + hostName);
-
+				
 				connectivity = 1;
 				serverPort = Integer.valueOf(data[2]);
-
-				ss = new ServerSocket(serverPort);
-				cs = new Socket();
-				cs = ss.accept();
-				if (cs.isConnected()) {
-					unlockPC();
-					clientVerified = true;
-					is = cs.getInputStream();
-					br = new BufferedReader(new InputStreamReader(is));
-					out = cs.getOutputStream();
-					pw = new PrintWriter(out, true);
-					Thread.sleep(2000);
-					runInputListener(br);
-					chkNetworkConnection();
-					chkDeviceConnection();
+				
+				while(true) {
+					ss = new ServerSocket(serverPort);
+					cs = new Socket();
+					cs = ss.accept();
+					if (cs.isConnected()) {
+						unlockPC();
+						clientVerified = true;
+						is = cs.getInputStream();
+						br = new BufferedReader(new InputStreamReader(is));
+						out = cs.getOutputStream();
+						pw = new PrintWriter(out, true);
+						
+						String message = br.readLine();
+						
+						System.out.println("[CREATE_CONN] Connected! Authenticating client...");
+						if(message.contains("gnssReconnect|")) {
+							String[] msgdata = message.split("\\|");
+							if(isIDVerified(msgdata[1])) {
+								System.out.println(msgdata[1]);
+								System.out.println("[CREATE_CONN] Server has connected to client successfully!");
+								Thread.sleep(1000);
+								unlockPC();
+								runInputListener(br);
+								chkNetworkConnection();
+								chkDeviceConnection();
+								pw.println("gnssReconnectSuccess");
+								break;
+							}
+							else {
+								pw.println("gnssReconnectFailed");
+								System.out.println("[CREATE_CONN] Authentication failed. Unknown device attempts to reconnect.");
+							}
+						}
+					}
 				}
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {

@@ -50,6 +50,8 @@ import javax.swing.JScrollPane;
 
 public class MainApp extends JFrame {
 
+	public ImageIcon icon;
+	
 	public JPanel titleBarPanel,customTitleBar,mainPanel;
 	
 	public JPanel contentPane;
@@ -115,6 +117,7 @@ public class MainApp extends JFrame {
 	private JLabel connectedToLbl;
 	private JLabel lblRecoveryKey;
 	public JLabel generatedRecoveryKey;
+	private JLabel lblNewLabel;
 	
 	
 	/**
@@ -123,7 +126,10 @@ public class MainApp extends JFrame {
 	
 	public MainApp() {
 		
+		icon = new ImageIcon("icons\\NSS_Icon.png");
+		
 		setTitle("Network Security System");
+		setIconImage(icon.getImage());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		double x = 600;
 	    double y = 600;
@@ -214,6 +220,10 @@ public class MainApp extends JFrame {
 	    
 	    titleBarPanel.add(customTitleBar);
 	    
+	    lblNewLabel = new JLabel("");
+	    lblNewLabel.setIcon(new ImageIcon("icons\\NSS_window_icon.png"));
+	    lblNewLabel.setBounds(8, 5, 30, 34);
+	    customTitleBar.add(lblNewLabel);
 	    
 	    // Create Host Panel
 		createHostPanel = new JPanel();
@@ -268,7 +278,7 @@ public class MainApp extends JFrame {
 		encSetupBtn.setFocusable(false);
 		encSetupBtn.setBorderPainted(false);
 		encSetupBtn.setBackground(new Color(0, 121, 0));
-		encSetupBtn.setBounds(4, 47, 28, 23);
+		encSetupBtn.setBounds(9, 54, 28, 23);
 		createHostPanel.add(encSetupBtn);
 		
 		// Encryption Setup Panel
