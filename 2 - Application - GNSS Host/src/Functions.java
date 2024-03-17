@@ -1525,8 +1525,7 @@ public class Functions implements Runnable{
 					cs = new Socket();
 					cs = ss.accept();
 					if (cs.isConnected()) {
-						unlockPC();
-						clientVerified = true;
+						
 						is = cs.getInputStream();
 						br = new BufferedReader(new InputStreamReader(is));
 						out = cs.getOutputStream();
@@ -1539,12 +1538,17 @@ public class Functions implements Runnable{
 							String[] msgdata = message.split("\\|");
 							if(isIDVerified(msgdata[1])) {
 								System.out.println(msgdata[1]);
-								System.out.println("[CREATE_CONN] Server has connected to client successfully!");
-								Thread.sleep(1000);
+								
 								unlockPC();
+								clientVerified = true;
+								
+								System.out.println("[CREATE_CONN] Client has connected to host successfully!");
+								Thread.sleep(1000);
+								
 								runInputListener(br);
 								chkNetworkConnection();
 								chkDeviceConnection();
+								
 								pw.println("gnssReconnectSuccess");
 								break;
 							}
@@ -1580,18 +1584,36 @@ public class Functions implements Runnable{
 					//cs.setSoTimeout(2000);
 
 					if (cs.isConnected()) {
-						unlockPC();
-						clientVerified = true;
-
 						pw = new PrintWriter(cs.getOutputStream(), true);
         	            br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
+        	            String message = br.readLine();
+        	            
+        	            System.out.println("[CREATE_CONN] Connected! Authenticating client...");
+        	            if(message.contains("gnssReconnect|")) {
+        	            	String[] msgdata = message.split("\\|");
+        	            	
+        	            	if(isIDVerified(msgdata[1])) {
+        	            		System.out.println(msgdata[1]);
+        	            		unlockPC();
+        						clientVerified = true;
+        						
+        						System.out.println("[CREATE_CONN] Client has connected to host successfully!");
+        						Thread.sleep(2000);
 
-						Thread.sleep(2000);
-
-						runInputListener(br);
-						chkNetworkConnection();
-						chkDeviceConnection();
-						break;
+        						runInputListener(br);
+        						chkNetworkConnection();
+        						chkDeviceConnection();
+        						
+        						pw.println("gnssReconnectSuccess");
+        						break;
+        	            	}
+        	            }
+        	            else if(message.contains("gnssReconnectFailed")) {
+        	            	pw.println("gnssReconnectFailed");
+							System.out.println("[CREATE_CONN] Authentication failed. Unknown device attempts to reconnect.");
+        	            }
+        	            
+						
 					}
 				} catch (IOException e) {
 					try {
