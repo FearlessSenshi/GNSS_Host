@@ -43,6 +43,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -52,7 +53,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-18-2024 0418
+//		DT  : 03-19-2024 0437
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -455,7 +456,7 @@ public class Functions implements Runnable{
 							ss = new ServerSocket(serverPort);
 							System.out.println("[WIFI_MODE] " + ss.getLocalPort());
 							System.out.println("[WIFI_MODE] Waiting for client connection...");
-							gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+							gui.clientConnectStatus.setIcon(new ImageIcon("buffering.gif"));
 					        cs = ss.accept();
 					        if(cs.isConnected()) {
 					        	is = cs.getInputStream();
@@ -471,7 +472,7 @@ public class Functions implements Runnable{
 				    			
 								// Check if client is connected
 								if (cs.isConnected()) {
-									gui.clientConnectStatus.setText("[WIFI_MODE] Status: Awaiting client verification...");
+									gui.clientConnectStatus.setIcon(new ImageIcon("buffering.gif"));
 									
 									// Waits the client's response for the passcode
 									output = br.readLine();
@@ -643,7 +644,7 @@ public class Functions implements Runnable{
 	// Opens a panel for CREATING a Host Connection
 	void showAuthPanel() {
 		gui.cardLayout.show(gui.container, "authPanel");
-		gui.clientConnectStatus.setText("Status: Waiting for client connection...");
+		// gui.clientConnectStatus.setText("Status: Waiting for client connection...");
 		gui.hostnameLabel.setText(hostName);
 		gui.hostIPLabel.setText(hostIP);
 		gui.hostPortLbl.setText(Integer.toString(serverPort));
@@ -655,7 +656,6 @@ public class Functions implements Runnable{
 		InetAddress inetAddress = InetAddress.getLocalHost();
 		hostIP = inetAddress.getLocalHost().getHostAddress();
 		hostName = inetAddress.getLocalHost().getHostName();
-		gui.clientConnectStatus.setText("Status: Waiting client connection...");
 		authFailed = false;
 		gui.repaint();
 		t1 = new Thread(this); // runs the runnable thread
