@@ -242,14 +242,37 @@ public class Functions implements Runnable{
 			
 		});
 		
-		gui.encSetupBtn.addActionListener(new ActionListener() {
+		gui.encBtn.addMouseListener(new MouseListener() {
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void mouseClicked(MouseEvent e) {
 				gui.setEnabled(false);
 				gui.encSetupFrame.setVisible(true);
 				loadDirectories();
 				gui.repaint();
+				
 			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				//placeholder
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				//placeholder
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				//placeholder
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				//placeholder
+			}
+			
 		});
 		
 		// Lock Screen Buttons and Textfields
@@ -397,6 +420,7 @@ public class Functions implements Runnable{
 		f.gui.setVisible(true);
 		f.gui.setOpacity(0.0f);
 		fadeTransition(f.gui);
+		f.gui.authPanel.add(gui.clientConnectStatus);
 	}
 	
 	// This is the main thread
@@ -483,7 +507,10 @@ public class Functions implements Runnable{
 										System.out.println("[WIFI_MODE] Client Verified!");
 										gui.cardLayout.show(gui.container, "connectStatusPanel");
 										gui.repaint();
-										gui.hostIPHostName.setText(hostIP + " - " + hostName);
+										InetAddress ia = cs.getInetAddress();
+										System.out.println("[WIFI_MODE] Client Local IP Address: " + ia.getHostAddress());
+										String clientIP = ia.getHostAddress();
+										gui.hostIPHostName.setText(clientIP);
 										createRecoveryKey();
 										updateStatus("yes");
 										
@@ -492,8 +519,6 @@ public class Functions implements Runnable{
 										pw.println("gnssVerified" + hostPasscode);
 										clientVerified = true;
 										
-										InetAddress ia = cs.getInetAddress();
-										System.out.println("[WIFI_MODE] Client Local IP Address: " + ia.getHostAddress());
 										runInputListener(br);
 										chkNetworkConnection();
 										chkDeviceConnection();
@@ -598,7 +623,8 @@ public class Functions implements Runnable{
                                 clientVerified = true;
                                 gui.cardLayout.show(gui.container, "connectStatusPanel");
 								gui.repaint();
-								gui.hostIPHostName.setText(hostIP + " - " + hostName);
+								
+								gui.hostIPHostName.setText(getDefaultGateway());
 								cs.close();
                                 pw.close();
                                 br.close();
@@ -644,7 +670,6 @@ public class Functions implements Runnable{
 	// Opens a panel for CREATING a Host Connection
 	void showAuthPanel() {
 		gui.cardLayout.show(gui.container, "authPanel");
-		// gui.clientConnectStatus.setText("Status: Waiting for client connection...");
 		gui.hostnameLabel.setText(hostName);
 		gui.hostIPLabel.setText(hostIP);
 		gui.hostPortLbl.setText(Integer.toString(serverPort));
@@ -1528,10 +1553,6 @@ public class Functions implements Runnable{
 				lockPC();
 				
 				gui.cardLayout.show(gui.container, "lockPanel");
-				InetAddress inetAddress = InetAddress.getLocalHost();
-				hostIP = inetAddress.getLocalHost().getHostAddress();
-				hostName = inetAddress.getLocalHost().getHostName();
-				gui.hostIPHostName.setText(hostIP + " - " + hostName);
 				
 				connectivity = 1;
 				serverPort = Integer.valueOf(data[2]);
@@ -1555,11 +1576,17 @@ public class Functions implements Runnable{
 							if(isIDVerified(msgdata[1])) {
 								System.out.println(msgdata[1]);
 								
+								InetAddress ia = cs.getInetAddress();
+								System.out.println("[CREATE_CONN] Client Local IP Address: " + ia.getHostAddress());
+								String clientIP = ia.getHostAddress();
+								gui.hostIPHostName.setText(clientIP);
+								
 								unlockPC();
 								clientVerified = true;
 								
 								System.out.println("[CREATE_CONN] Client has connected to host successfully!");
 								Thread.sleep(1000);
+								
 								
 								runInputListener(br);
 								chkNetworkConnection();
@@ -1612,10 +1639,11 @@ public class Functions implements Runnable{
         	            		System.out.println(msgdata[1]);
         	            		unlockPC();
         						clientVerified = true;
+        						gui.hostIPHostName.setText(getDefaultGateway());
         						
         						System.out.println("[CREATE_CONN] Client has connected to host successfully!");
         						Thread.sleep(2000);
-
+        						
         						runInputListener(br);
         						chkNetworkConnection();
         						chkDeviceConnection();

@@ -12,11 +12,15 @@ import java.awt.Container;
 
 import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 
 import javax.swing.SwingConstants;
@@ -31,6 +35,9 @@ import javax.swing.border.BevelBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -51,7 +58,7 @@ import javax.swing.JScrollPane;
 
 public class MainApp extends JFrame {
 
-	public ImageIcon icon;
+	public ImageIcon icon,buffering;
 	
 	public JPanel titleBarPanel,customTitleBar,mainPanel;
 	
@@ -60,12 +67,12 @@ public class MainApp extends JFrame {
 	public JPanel createHostPanel;
 	public JLabel titleLabel;
 	public JLabel dialog1;
-	public JButton createBtn;
+	public CustomButton createBtn;
 	
 	public JDialog encSetupFrame;
 	public JPanel encryptionSetupPanel;
 	public JList filepathList;
-	public JButton addBtn,removeBtn,removeAllBtn,okBtn;
+	public CustomButton addBtn,removeBtn,removeAllBtn,okBtn;
 	public DefaultListModel<String> listModel;
 	public JOptionPane decProcessing;
 	public JOptionPane decFinished;
@@ -78,17 +85,17 @@ public class MainApp extends JFrame {
 	public JLabel hostPortLbl;
 	public JLabel clientConnectStatus;
 	public JLabel generatedPasscode;
-	public JButton cancelHostConnection;
+	public CustomButton cancelHostConnection;
 	
 	public JPanel connectToHostPanel;
 	public JButton createBtn2;
 	public JTextField passcodeInput;
-	public JButton connectHostBtn;
-	public JButton btnCancel;
+	public CustomButton connectHostBtn;
+	public CustomButton btnCancel;
 	
 	public JPanel connectStatusPanel;
 	public JLabel hostIPHostName;
-	public JButton dcButton;
+	public CustomButton dcButton;
 	
 	public CardLayout cardLayout;
 	public Container container;
@@ -111,11 +118,11 @@ public class MainApp extends JFrame {
 	public JButton recoveryBtn;
 	public JButton cancelRecoveryBtn;
 	public JButton recoverBtn;
-	public JButton encSetupBtn;
+	public CustomButton encSetupBtn;
 	
 	public JTextField uniquePasscodeInput;
 	
-	public JButton btnHotspot;
+	public CustomButton btnHotspot;
 	
 	public int mouseX,mouseY;
 	private JLabel connectedToLbl;
@@ -123,6 +130,10 @@ public class MainApp extends JFrame {
 	public JLabel generatedRecoveryKey;
 	private JLabel lblNewLabel;
 	private JLabel lblNewLabel_1;
+	private JLabel lblNewLabel_2;
+	private JLabel logoWindow;
+	public JLabel encBtn;
+	private JLabel lblNewLabel_3;
 	
 	
 	/**
@@ -225,6 +236,11 @@ public class MainApp extends JFrame {
 	    
 	    titleBarPanel.add(customTitleBar);
 	    
+	    logoWindow = new JLabel("");
+	    logoWindow.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\NSS_window_icon.png"));
+	    logoWindow.setBounds(10, 6, 28, 28);
+	    customTitleBar.add(logoWindow);
+	    
 	    // Create Host Panel
 		createHostPanel = new JPanel();
 		createHostPanel.setBackground(new Color(30, 30, 30));
@@ -234,7 +250,7 @@ public class MainApp extends JFrame {
 		titleLabel = new JLabel("Network Security System (Host)");
 		titleLabel.setForeground(new Color(255, 255, 255));
 		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		titleLabel.setBounds(10, 156, 564, 37);
+		titleLabel.setBounds(10, 167, 564, 37);
 		titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 30));
 		createHostPanel.add(titleLabel);
 
@@ -242,47 +258,48 @@ public class MainApp extends JFrame {
 		dialog1.setForeground(new Color(255, 255, 255));
 		dialog1.setHorizontalAlignment(SwingConstants.CENTER);
 		dialog1.setFont(new Font("Tahoma", Font.BOLD, 20));
-		dialog1.setBounds(72, 281, 208, 37);
+		dialog1.setBounds(78, 315, 208, 37);
 		createHostPanel.add(dialog1);
 
-		createBtn = new JButton("Wi-Fi");
-		createBtn.setForeground(new Color(255, 255, 255));
-		createBtn.setBorderPainted(false);
-		createBtn.setBackground(new Color(0, 202, 0));
-		createBtn.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		createBtn = new CustomButton("Wi-Fi", new Color(0,202,0), new Color(255,255,255), 40, null);
 		createBtn.setFont(new Font("Tahoma", Font.BOLD, 25));
 		createBtn.setFocusable(false);
-		createBtn.setBounds(93, 329, 167, 53);
+		createBtn.setBounds(99, 363, 167, 53);
 		createHostPanel.add(createBtn);
 		
 		JLabel dialog2 = new JLabel("Connect via Hotspot");
 		dialog2.setHorizontalAlignment(SwingConstants.CENTER);
 		dialog2.setForeground(Color.WHITE);
 		dialog2.setFont(new Font("Tahoma", Font.BOLD, 20));
-		dialog2.setBounds(290, 281, 208, 37);
+		dialog2.setBounds(296, 315, 208, 37);
 		createHostPanel.add(dialog2);
 		
-		btnHotspot = new JButton("Hotspot");
-		btnHotspot.setForeground(Color.WHITE);
+		btnHotspot = new CustomButton("Hotspot",new Color(0,202,0), new Color(255,255,255), 40,null);
 		btnHotspot.setFont(new Font("Tahoma", Font.BOLD, 25));
 		btnHotspot.setFocusable(false);
-		btnHotspot.setBorderPainted(false);
 		btnHotspot.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
 		btnHotspot.setBackground(new Color(0, 202, 0)); // set to 0, 202, 0
-		btnHotspot.setBounds(311, 329, 167, 53);
+		btnHotspot.setBounds(317, 363, 167, 53);
 		createHostPanel.add(btnHotspot);
 		
-		encSetupBtn = new JButton("");
-		encSetupBtn.setForeground(new Color(255, 255, 255));
-		encSetupBtn.setFont(new Font("Tahoma", Font.BOLD, 13));
-		encSetupBtn.setFocusable(false);
-		encSetupBtn.setBorderPainted(false);
-		encSetupBtn.setBackground(new Color(0, 121, 0));
-		encSetupBtn.setBounds(9, 54, 28, 23);
-		createHostPanel.add(encSetupBtn);
+//		ImageIcon encIcon = new ImageIcon("icons\\enc.png");
+//		encSetupBtn = new CustomButton("",new Color(0, 121, 0), new Color(0,0,0), 10, encIcon);
+//		encSetupBtn.setFocusable(false);
+//		encSetupBtn.setBounds(9, 54, 28, 28);
+//		createHostPanel.add(encSetupBtn);
 		
-		JLabel bgImg = new JLabel("New label");
-		bgImg.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\frameBg.png"));
+		encBtn = new JLabel("");
+		encBtn.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\enc.png"));
+		encBtn.setBounds(562, 54, 28, 28);
+		createHostPanel.add(encBtn);
+		
+		lblNewLabel_3 = new JLabel("");
+		lblNewLabel_3.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\NSS_frame_icon.png"));
+		lblNewLabel_3.setBounds(256, 233, 64, 64);
+		createHostPanel.add(lblNewLabel_3);
+		
+		JLabel bgImg = new JLabel("");
+		bgImg.setIcon(new ImageIcon("icons\\frameBg.png"));
 		bgImg.setBounds(0, 0, 600, 600);
 		createHostPanel.add(bgImg);
 		
@@ -293,6 +310,20 @@ public class MainApp extends JFrame {
 		encSetupFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		encSetupFrame.setAlwaysOnTop(true);
 		encSetupFrame.setLocationRelativeTo(null);
+		ImageIcon encIcon = new ImageIcon("enc.png");
+		encSetupFrame.setIconImage(encIcon.getImage());
+		
+		encSetupFrame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				listModel.clear();
+				encSetupFrame.dispose();
+				setAlwaysOnTop(true);
+				setAlwaysOnTop(false);
+				setEnabled(true);
+				repaint();
+			}
+		});
 		
 		encryptionSetupPanel = new JPanel();
 		encryptionSetupPanel.setBackground(new Color(15, 15, 15));
@@ -314,19 +345,19 @@ public class MainApp extends JFrame {
 		sc.setBounds(20, 34, 642, 250);
 		encryptionSetupPanel.add(sc);
 		
-		addBtn = new JButton("ADD");
+		addBtn = new CustomButton("ADD", new Color(0,165,0),new Color(255,255,255), 10, null);
 		addBtn.setBounds(228, 306, 89, 23);
 		encryptionSetupPanel.add(addBtn);
 		
-		removeBtn = new JButton("REMOVE");
+		removeBtn = new CustomButton("REMOVE", new Color(255,100,0),new Color(255,255,255), 10, null);
 		removeBtn.setBounds(327, 306, 89, 23);
 		encryptionSetupPanel.add(removeBtn);
 		
-		removeAllBtn = new JButton("REMOVE ALL");
+		removeAllBtn = new CustomButton("REMOVE ALL", new Color(255,0,0),new Color(255,255,255), 10, null);
 		removeAllBtn.setBounds(426, 306, 137, 23);
 		encryptionSetupPanel.add(removeAllBtn);
 		
-		okBtn = new JButton("OK");
+		okBtn = new CustomButton("OK", new Color(0,165,0),new Color(255,255,255), 10, null);
 		okBtn.setBounds(573, 306, 89, 23);
 		encryptionSetupPanel.add(okBtn);
 		
@@ -351,85 +382,82 @@ public class MainApp extends JFrame {
 		lbl_hostname.setForeground(new Color(255, 255, 255));
 		lbl_hostname.setHorizontalAlignment(SwingConstants.LEFT);
 		lbl_hostname.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lbl_hostname.setBounds(54, 143, 117, 37);
+		lbl_hostname.setBounds(67, 216, 117, 37);
 		authPanel.add(lbl_hostname);
 
 		hostnameLabel = new JLabel("Encode <Hostname> in this label.");
 		hostnameLabel.setForeground(new Color(255, 255, 255));
 		hostnameLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		hostnameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostnameLabel.setBounds(232, 145, 318, 37);
+		hostnameLabel.setBounds(245, 216, 318, 37);
 		authPanel.add(hostnameLabel);
 
-		clientConnectStatus = new JLabel("");
-		clientConnectStatus.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\buffering.gif"));
-		clientConnectStatus.setForeground(new Color(255, 255, 255));
-		clientConnectStatus.setHorizontalAlignment(SwingConstants.LEFT);
-		clientConnectStatus.setFont(new Font("Tahoma", Font.BOLD, 20));
-		clientConnectStatus.setBounds(-218, 396, 686, 105);
+		buffering = new ImageIcon("icons\\buffering.gif");
+		clientConnectStatus = new JLabel();
+		clientConnectStatus.setIcon(buffering);
+		clientConnectStatus.setBounds(250, 143, 50, 50);
 		authPanel.add(clientConnectStatus);
+		
 
 		JLabel lblPasscode = new JLabel("Passcode: ");
 		lblPasscode.setForeground(new Color(255, 255, 255));
 		lblPasscode.setHorizontalAlignment(SwingConstants.LEFT);
 		lblPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPasscode.setBounds(54, 300, 117, 37);
+		lblPasscode.setBounds(67, 362, 117, 37);
 		authPanel.add(lblPasscode);
 
 		generatedPasscode = new JLabel("Encode passcode here");
 		generatedPasscode.setForeground(new Color(255, 255, 255));
 		generatedPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		generatedPasscode.setBounds(232, 300, 318, 37);
+		generatedPasscode.setBounds(245, 362, 318, 37);
 		authPanel.add(generatedPasscode);
 		
-		cancelHostConnection = new JButton("CANCEL");
-		cancelHostConnection.setForeground(new Color(255, 255, 255));
-		cancelHostConnection.setBackground(new Color(255, 0, 0));
+		cancelHostConnection = new CustomButton("CANCEL", new Color(202,0,0),new Color(255,255,255), 40, null);
 		cancelHostConnection.setBorderPainted(false);
 		cancelHostConnection.setFont(new Font("Tahoma", Font.BOLD, 25));
-		cancelHostConnection.setBounds(203, 468, 167, 53);
+		cancelHostConnection.setBounds(204, 486, 167, 53);
 		authPanel.add(cancelHostConnection);
 		
 		JLabel lblPort = new JLabel("Port:");
 		lblPort.setForeground(new Color(255, 255, 255));
 		lblPort.setHorizontalAlignment(SwingConstants.LEFT);
 		lblPort.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPort.setBounds(54, 239, 117, 37);
+		lblPort.setBounds(67, 314, 117, 37);
 		authPanel.add(lblPort);
 		
 		hostPortLbl = new JLabel("Encode port here");
 		hostPortLbl.setForeground(new Color(255, 255, 255));
 		hostPortLbl.setHorizontalAlignment(SwingConstants.LEFT);
 		hostPortLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostPortLbl.setBounds(232, 241, 318, 37);
+		hostPortLbl.setBounds(245, 314, 318, 37);
 		authPanel.add(hostPortLbl);
 		
 		JLabel hostIPLbl = new JLabel("Host IP:");
 		hostIPLbl.setForeground(new Color(255, 255, 255));
 		hostIPLbl.setHorizontalAlignment(SwingConstants.LEFT);
 		hostIPLbl.setFont(new Font("Tahoma", Font.BOLD, 20));
-		hostIPLbl.setBounds(54, 191, 117, 37);
+		hostIPLbl.setBounds(67, 266, 117, 37);
 		authPanel.add(hostIPLbl);
 		
 		hostIPLabel = new JLabel("Encode <IPAdress> in this label.");
 		hostIPLabel.setForeground(new Color(255, 255, 255));
 		hostIPLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		hostIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostIPLabel.setBounds(232, 193, 318, 37);
+		hostIPLabel.setBounds(245, 266, 318, 37);
 		authPanel.add(hostIPLabel);
 		
 		lblRecoveryKey = new JLabel("Recovery Key: ");
 		lblRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
 		lblRecoveryKey.setForeground(Color.WHITE);
 		lblRecoveryKey.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblRecoveryKey.setBounds(54, 348, 160, 37);
+		lblRecoveryKey.setBounds(67, 410, 160, 37);
 		authPanel.add(lblRecoveryKey);
 		
 		generatedRecoveryKey = new JLabel("Encode key here");
 		generatedRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
 		generatedRecoveryKey.setForeground(Color.WHITE);
 		generatedRecoveryKey.setFont(new Font("Tahoma", Font.BOLD, 20));
-		generatedRecoveryKey.setBounds(232, 348, 318, 37);
+		generatedRecoveryKey.setBounds(245, 410, 318, 37);
 		authPanel.add(generatedRecoveryKey);
 		
 		lblNewLabel_1 = new JLabel("");
@@ -455,28 +483,33 @@ public class MainApp extends JFrame {
 		titleLblConnected.setFont(new Font("Tahoma", Font.BOLD, 30));
 		connectStatusPanel.add(titleLblConnected);
 
-		hostIPHostName = new JLabel("Encode Host IP/Hostname here");
+		hostIPHostName = new JLabel("Encode Client IP here");
 		hostIPHostName.setForeground(new Color(255, 255, 255));
-		hostIPHostName.setHorizontalAlignment(SwingConstants.LEFT);
+		hostIPHostName.setHorizontalAlignment(SwingConstants.CENTER);
 		hostIPHostName.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostIPHostName.setBounds(313, 340, 248, 25);
+		hostIPHostName.setBounds(171, 346, 248, 25);
 		connectStatusPanel.add(hostIPHostName);
 		
-		dcButton = new JButton("DISCONNECT");
+		dcButton = new CustomButton("DISCONNECT", new Color(255, 0, 0), new Color(255,255,255), 40, null);
 		dcButton.setFocusable(false);
 		dcButton.setForeground(new Color(255, 255, 255));
 		dcButton.setBackground(new Color(255, 0, 0));
 		dcButton.setFont(new Font("Tahoma", Font.BOLD, 20));
 		dcButton.setBorderPainted(false);
-		dcButton.setBounds(190, 395, 201, 57);
+		dcButton.setBounds(199, 394, 201, 57);
 		connectStatusPanel.add(dcButton);
 		
 		connectedToLbl = new JLabel("You are now connected to this device: ");
 		connectedToLbl.setForeground(new Color(255, 255, 255));
-		connectedToLbl.setHorizontalAlignment(SwingConstants.LEFT);
+		connectedToLbl.setHorizontalAlignment(SwingConstants.CENTER);
 		connectedToLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		connectedToLbl.setBounds(57, 340, 256, 25);
+		connectedToLbl.setBounds(161, 322, 277, 25);
 		connectStatusPanel.add(connectedToLbl);
+		
+		lblNewLabel_2 = new JLabel("");
+		lblNewLabel_2.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\wifi.gif"));
+		lblNewLabel_2.setBounds(265, 252, 48, 48);
+		connectStatusPanel.add(lblNewLabel_2);
 		
 		connectToHostPanel = new JPanel();
 		connectToHostPanel.setBackground(new Color(30, 30, 30));
@@ -487,19 +520,19 @@ public class MainApp extends JFrame {
 		inputIPLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		inputIPLabel.setForeground(new Color(255, 255, 255));
 		inputIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		inputIPLabel.setBounds(153, 243, 285, 89);
+		inputIPLabel.setBounds(150, 171, 285, 89);
 		connectToHostPanel.add(inputIPLabel);
 		
 		JLabel inputPasscodeLabel = new JLabel("Passcode");
 		inputPasscodeLabel.setForeground(new Color(255, 255, 255));
 		inputPasscodeLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
-		inputPasscodeLabel.setBounds(139, 343, 103, 37);
+		inputPasscodeLabel.setBounds(235, 271, 103, 37);
 		connectToHostPanel.add(inputPasscodeLabel);
 		
 		JLabel connectToHostTitle = new JLabel("Enter Client Details");
 		connectToHostTitle.setForeground(new Color(255, 255, 255));
 		connectToHostTitle.setFont(new Font("Tahoma", Font.BOLD, 27));
-		connectToHostTitle.setBounds(157, 167, 308, 37);
+		connectToHostTitle.setBounds(150, 104, 308, 37);
 		connectToHostPanel.add(connectToHostTitle);
 		
 		passcodeInput = new JTextField();
@@ -508,10 +541,10 @@ public class MainApp extends JFrame {
 		passcodeInput.setBackground(new Color(15, 15, 15));
 		passcodeInput.setForeground(new Color(255, 255, 255));
 		passcodeInput.setColumns(10);
-		passcodeInput.setBounds(247, 343, 211, 37);
+		passcodeInput.setBounds(185, 319, 211, 37);
 		connectToHostPanel.add(passcodeInput);
 		
-		connectHostBtn = new JButton("CONNECT");
+		connectHostBtn = new CustomButton("CONNECT", new Color(0,202,0),new Color(255,255,255), 40, null);
 		connectHostBtn.setForeground(new Color(255, 255, 255));
 		connectHostBtn.setBorderPainted(false);
 		connectHostBtn.setBackground(new Color(0, 202, 0));
@@ -519,7 +552,7 @@ public class MainApp extends JFrame {
 		connectHostBtn.setBounds(130, 420, 158, 57);
 		connectToHostPanel.add(connectHostBtn);
 		
-		btnCancel = new JButton("CANCEL");
+		btnCancel = new CustomButton("CANCEL", new Color(202,0,0),new Color(255,255,255), 40, null);
 		btnCancel.setForeground(new Color(255, 255, 255));
 		btnCancel.setFont(new Font("Tahoma", Font.BOLD, 20));
 		btnCancel.setBorderPainted(false);
@@ -610,5 +643,85 @@ public class MainApp extends JFrame {
 //		gbc.fill = GridBagConstraints.HORIZONTAL;
 //		recoveryPanel.add(recoverBtn,gbc);
 		
+	}
+}
+
+class CustomButton extends JButton{
+	
+	int cornerRadius;
+	ImageIcon icon;
+	
+	CustomButton(String text, Color bgcolor, Color fgcolor, int cornerRadius, ImageIcon icon){
+		super(text);
+		
+		this.cornerRadius = cornerRadius;
+        this.icon = icon;
+		
+        setOpaque(false); // Make the button transparent
+        setContentAreaFilled(true); // Don't paint the content area
+        setBorderPainted(false); // Don't paint the border
+        setForeground(fgcolor); // Set text color
+        setBackground(bgcolor); // Set background color
+        setFocusPainted(false); // Don't paint focus state
+        
+        addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				setBackground(new Color(255,219,88));
+				setForeground(new Color(235,235,235));
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				setBackground(bgcolor);
+				setForeground(fgcolor);
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				setBackground(Color.white);
+				setForeground(Color.black);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				setBackground(bgcolor);
+				setForeground(fgcolor);
+			}
+        	
+        });
+	}
+	@Override
+	protected void paintComponent(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Draw the rounded rectangle
+        g2d.setColor(getBackground());
+        g2d.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+        
+        // Draw the text centered on the button
+        FontMetrics metrics = g2d.getFontMetrics(getFont());
+        int x = (getWidth() - metrics.stringWidth(getText())) / 2;
+        int y = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
+        g2d.setColor(getForeground());
+        g2d.drawString(getText(), x, y);
+        
+        g2d.dispose();
+        
+     // Draw the icon centered on the button
+        if (icon != null) {
+            int iconX = (getWidth() - icon.getIconWidth()) / 2;
+            int iconY = (getHeight() - icon.getIconHeight()) / 2;
+            icon.paintIcon(this, g2d, iconX, iconY);
+        }
 	}
 }
