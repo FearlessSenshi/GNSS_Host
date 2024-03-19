@@ -129,11 +129,16 @@ public class MainApp extends JFrame {
 	private JLabel lblRecoveryKey;
 	public JLabel generatedRecoveryKey;
 	private JLabel lblNewLabel;
-	private JLabel lblNewLabel_1;
 	private JLabel lblNewLabel_2;
 	private JLabel logoWindow;
 	public JLabel encBtn;
 	private JLabel lblNewLabel_3;
+	private JLabel lblNewLabel_4;
+	private JLabel titleLabel_2;
+	private JLabel lblInputThisDevices;
+	private JLabel lbldoNotLose;
+	private JLabel lblNewLabel_1;
+	private JLabel lblNewLabel_5;
 	
 	
 	/**
@@ -372,103 +377,123 @@ public class MainApp extends JFrame {
 		container.add(authPanel, "authPanel");
 		authPanel.setLayout(null);
 
-		titleLabel_1 = new JLabel("PC-Smartphone Connection (Wi-Fi)");
+		titleLabel_1 = new JLabel("Wi-Fi Connection");
 		titleLabel_1.setForeground(new Color(255, 255, 255));
 		titleLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 30));
-		titleLabel_1.setBounds(93, 84, 470, 37);
+		titleLabel_1.setBounds(70, 70, 225, 37);
 		authPanel.add(titleLabel_1);
 
 		JLabel lbl_hostname = new JLabel("Host Name:");
 		lbl_hostname.setForeground(new Color(255, 255, 255));
 		lbl_hostname.setHorizontalAlignment(SwingConstants.LEFT);
-		lbl_hostname.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lbl_hostname.setBounds(67, 216, 117, 37);
+		lbl_hostname.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		lbl_hostname.setBounds(71, 148, 117, 37);
 		authPanel.add(lbl_hostname);
 
 		hostnameLabel = new JLabel("Encode <Hostname> in this label.");
 		hostnameLabel.setForeground(new Color(255, 255, 255));
 		hostnameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		hostnameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostnameLabel.setBounds(245, 216, 318, 37);
+		hostnameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		hostnameLabel.setBounds(241, 148, 318, 37);
 		authPanel.add(hostnameLabel);
 
 		buffering = new ImageIcon("icons\\buffering.gif");
 		clientConnectStatus = new JLabel();
 		clientConnectStatus.setIcon(buffering);
-		clientConnectStatus.setBounds(250, 143, 50, 50);
+		clientConnectStatus.setBounds(526, 70, 50, 50);
 		authPanel.add(clientConnectStatus);
 		
 
 		JLabel lblPasscode = new JLabel("Passcode: ");
 		lblPasscode.setForeground(new Color(255, 255, 255));
 		lblPasscode.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPasscode.setBounds(67, 362, 117, 37);
+		lblPasscode.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		lblPasscode.setBounds(71, 324, 117, 37);
 		authPanel.add(lblPasscode);
 
 		generatedPasscode = new JLabel("Encode passcode here");
 		generatedPasscode.setForeground(new Color(255, 255, 255));
-		generatedPasscode.setFont(new Font("Tahoma", Font.BOLD, 20));
-		generatedPasscode.setBounds(245, 362, 318, 37);
+		generatedPasscode.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		generatedPasscode.setBounds(241, 324, 318, 37);
 		authPanel.add(generatedPasscode);
 		
 		cancelHostConnection = new CustomButton("CANCEL", new Color(202,0,0),new Color(255,255,255), 40, null);
 		cancelHostConnection.setBorderPainted(false);
 		cancelHostConnection.setFont(new Font("Tahoma", Font.BOLD, 25));
-		cancelHostConnection.setBounds(204, 486, 167, 53);
+		cancelHostConnection.setBounds(205, 494, 167, 53);
 		authPanel.add(cancelHostConnection);
 		
 		JLabel lblPort = new JLabel("Port:");
 		lblPort.setForeground(new Color(255, 255, 255));
 		lblPort.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPort.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblPort.setBounds(67, 314, 117, 37);
+		lblPort.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		lblPort.setBounds(71, 246, 117, 37);
 		authPanel.add(lblPort);
 		
 		hostPortLbl = new JLabel("Encode port here");
 		hostPortLbl.setForeground(new Color(255, 255, 255));
 		hostPortLbl.setHorizontalAlignment(SwingConstants.LEFT);
-		hostPortLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostPortLbl.setBounds(245, 314, 318, 37);
+		hostPortLbl.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		hostPortLbl.setBounds(241, 246, 318, 37);
 		authPanel.add(hostPortLbl);
 		
 		JLabel hostIPLbl = new JLabel("Host IP:");
 		hostIPLbl.setForeground(new Color(255, 255, 255));
 		hostIPLbl.setHorizontalAlignment(SwingConstants.LEFT);
-		hostIPLbl.setFont(new Font("Tahoma", Font.BOLD, 20));
-		hostIPLbl.setBounds(67, 266, 117, 37);
+		hostIPLbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		hostIPLbl.setBounds(71, 198, 117, 37);
 		authPanel.add(hostIPLbl);
 		
-		hostIPLabel = new JLabel("Encode <IPAdress> in this label.");
+		hostIPLabel = new JLabel("Encode <IPAddress> in this label.");
 		hostIPLabel.setForeground(new Color(255, 255, 255));
 		hostIPLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		hostIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		hostIPLabel.setBounds(245, 266, 318, 37);
+		hostIPLabel.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		hostIPLabel.setBounds(241, 198, 318, 37);
 		authPanel.add(hostIPLabel);
 		
 		lblRecoveryKey = new JLabel("Recovery Key: ");
 		lblRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
 		lblRecoveryKey.setForeground(Color.WHITE);
-		lblRecoveryKey.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblRecoveryKey.setBounds(67, 410, 160, 37);
+		lblRecoveryKey.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		lblRecoveryKey.setBounds(70, 372, 160, 37);
 		authPanel.add(lblRecoveryKey);
 		
 		generatedRecoveryKey = new JLabel("Encode key here");
 		generatedRecoveryKey.setHorizontalAlignment(SwingConstants.LEFT);
 		generatedRecoveryKey.setForeground(Color.WHITE);
-		generatedRecoveryKey.setFont(new Font("Tahoma", Font.BOLD, 20));
-		generatedRecoveryKey.setBounds(245, 410, 318, 37);
+		generatedRecoveryKey.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		generatedRecoveryKey.setBounds(241, 372, 318, 37);
 		authPanel.add(generatedRecoveryKey);
-		
-		lblNewLabel_1 = new JLabel("");
-		lblNewLabel_1.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\wifi.png"));
-		lblNewLabel_1.setBounds(0, 0, 46, 14);
-		authPanel.add(lblNewLabel_1);
 		
 		lblNewLabel = new JLabel("");
 		lblNewLabel.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\wifi.png"));
-		lblNewLabel.setBounds(43, 84, 40, 40);
+		lblNewLabel.setBounds(20, 70, 40, 40);
 		authPanel.add(lblNewLabel);
+		
+		lblInputThisDevices = new JLabel("Input this device's IP, port, and passcode to the client app.");
+		lblInputThisDevices.setHorizontalAlignment(SwingConstants.LEFT);
+		lblInputThisDevices.setForeground(Color.WHITE);
+		lblInputThisDevices.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		lblInputThisDevices.setBounds(70, 100, 382, 37);
+		authPanel.add(lblInputThisDevices);
+		
+		lbldoNotLose = new JLabel("<HTML>Do not lose this recovery key since this will recover your PC to prevent yourself from locking out.");
+		lbldoNotLose.setHorizontalAlignment(SwingConstants.LEFT);
+		lbldoNotLose.setForeground(Color.WHITE);
+		lbldoNotLose.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		lbldoNotLose.setBounds(273, 412, 244, 50);
+		authPanel.add(lbldoNotLose);
+		
+		lblNewLabel_1 = new JLabel("<HTML>________________________________________________________________________________________________<HTML>");
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		lblNewLabel_1.setForeground(new Color(255, 255, 255));
+		lblNewLabel_1.setBounds(43, 293, 520, 19);
+		authPanel.add(lblNewLabel_1);
+		
+		lblNewLabel_5 = new JLabel("");
+		lblNewLabel_5.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\warning.png"));
+		lblNewLabel_5.setBounds(243, 420, 20, 20);
+		authPanel.add(lblNewLabel_5);
 		
 		// Connection Status Panel
 		connectStatusPanel = new JPanel();
@@ -520,19 +545,20 @@ public class MainApp extends JFrame {
 		inputIPLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		inputIPLabel.setForeground(new Color(255, 255, 255));
 		inputIPLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		inputIPLabel.setBounds(150, 171, 285, 89);
+		inputIPLabel.setBounds(153, 203, 285, 89);
 		connectToHostPanel.add(inputIPLabel);
 		
 		JLabel inputPasscodeLabel = new JLabel("Passcode");
 		inputPasscodeLabel.setForeground(new Color(255, 255, 255));
 		inputPasscodeLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
-		inputPasscodeLabel.setBounds(235, 271, 103, 37);
+		inputPasscodeLabel.setBounds(238, 303, 103, 37);
 		connectToHostPanel.add(inputPasscodeLabel);
 		
-		JLabel connectToHostTitle = new JLabel("Enter Client Details");
+		JLabel connectToHostTitle = new JLabel("Enter Client Passcode");
+		connectToHostTitle.setHorizontalAlignment(SwingConstants.CENTER);
 		connectToHostTitle.setForeground(new Color(255, 255, 255));
 		connectToHostTitle.setFont(new Font("Tahoma", Font.BOLD, 27));
-		connectToHostTitle.setBounds(150, 104, 308, 37);
+		connectToHostTitle.setBounds(130, 161, 308, 37);
 		connectToHostPanel.add(connectToHostTitle);
 		
 		passcodeInput = new JTextField();
@@ -541,7 +567,7 @@ public class MainApp extends JFrame {
 		passcodeInput.setBackground(new Color(15, 15, 15));
 		passcodeInput.setForeground(new Color(255, 255, 255));
 		passcodeInput.setColumns(10);
-		passcodeInput.setBounds(185, 319, 211, 37);
+		passcodeInput.setBounds(188, 351, 211, 37);
 		connectToHostPanel.add(passcodeInput);
 		
 		connectHostBtn = new CustomButton("CONNECT", new Color(0,202,0),new Color(255,255,255), 40, null);
@@ -560,88 +586,113 @@ public class MainApp extends JFrame {
 		btnCancel.setBounds(307, 420, 158, 57);
 		connectToHostPanel.add(btnCancel);
 		
+		lblNewLabel_4 = new JLabel("");
+		lblNewLabel_4.setIcon(new ImageIcon("D:\\Programming\\Java\\W2 - With Repository\\GNSS_Host\\2 - Application - GNSS Host\\icons\\hotspot.png"));
+		lblNewLabel_4.setBounds(10, 55, 40, 40);
+		connectToHostPanel.add(lblNewLabel_4);
+		
+		titleLabel_2 = new JLabel("Hotspot Connection");
+		titleLabel_2.setForeground(Color.WHITE);
+		titleLabel_2.setFont(new Font("Tahoma", Font.PLAIN, 30));
+		titleLabel_2.setBounds(60, 58, 259, 37);
+		connectToHostPanel.add(titleLabel_2);
+		
 		// Lock Screen
-//		w = new JFrame();
-//		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
-//		//w.setUndecorated(true);
-//		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
-//		w.setLocationRelativeTo(null);
-//		
-//		lsCardLayout = new CardLayout(0,0);
-//		lsContainer = w.getContentPane();
-//		lsContainer.setLayout(lsCardLayout);
-//		
-//		// Lock Panel
-//		lockPanel = new JPanel();
-//		lsContainer.add(lockPanel,"lockPanel");
-//		lockPanel.setLayout(new GridLayout(0,1,0,0));
-//		
-//		JPanel panel1 = new JPanel();
-//		JPanel panel2 = new JPanel();
-//		panel1.setLayout(new BorderLayout());
-//		lockPanel.add(panel1);
-//		lockPanel.add(panel2);
-//		
-//		windowLockLabel = new JLabel("Your PC is locked.");
-//		windowLockLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
-//		panel1.add(windowLockLabel, BorderLayout.SOUTH);
-//		
-		recoveryBtn = new JButton("Recovery Mode");
-		recoveryBtn.setPreferredSize(new Dimension(150,40));
-//		panel2.add(recoveryBtn);
-//		
-//		// Recovery Mode Panel
-//		GridBagLayout gbl = new GridBagLayout();
-//		recoveryPanel = new JPanel();
-//		lsContainer.add(recoveryPanel,"recoveryPanel");
-//		recoveryPanel.setLayout(gbl);
-//		
-//		GridBagConstraints gbc = new GridBagConstraints();
-//		
+		w = new JFrame();
+		Dimension scSize = Toolkit.getDefaultToolkit().getScreenSize();
+		//w.setUndecorated(true);
+		w.setSize((int)scSize.getWidth(),(int)scSize.getHeight());
+		w.setLocationRelativeTo(null);
+		w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		lsCardLayout = new CardLayout(0,0);
+		lsContainer = w.getContentPane();
+		lsContainer.setLayout(lsCardLayout);
+		
+		// Lock Panel
+		lockPanel = new JPanel();
+		lsContainer.add(lockPanel,"lockPanel");
+		lockPanel.setLayout(new GridLayout(0,1,0,0));
+		
+		JPanel panel1 = new JPanel();
+		JPanel panel2 = new JPanel();
+		
+		panel1.setLayout(new BorderLayout());
+		panel1.setBackground(Color.black);
+		
+		panel2.setBackground(Color.black);
+		
+		lockPanel.add(panel1);
+		lockPanel.add(panel2);
+		
+		windowLockLabel = new JLabel("Your PC is locked.");
+		windowLockLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		windowLockLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
+		windowLockLabel.setForeground(Color.white);
+		panel1.add(windowLockLabel, BorderLayout.SOUTH);
+
+		recoveryBtn = new CustomButton("Recovery Mode", new Color(0,170,0),new Color(255,255,255),40,null);
+		recoveryBtn.setPreferredSize(new Dimension(250,57));
+		recoveryBtn.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		panel2.add(recoveryBtn);
+		
+		// Recovery Mode Panel
+		GridBagLayout gbl = new GridBagLayout();
+		recoveryPanel = new JPanel();
+		lsContainer.add(recoveryPanel,"recoveryPanel");
+		recoveryPanel.setLayout(gbl);
+		recoveryPanel.setBackground(Color.black);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		
 		recoveryLabel = new JLabel("Recovery Mode");
 		recoveryLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		recoveryLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
-//		gbc.ipady = 10;
-//		gbc.gridx = 0;
-//		gbc.gridy = 0;
-//		gbc.gridwidth = 5;
-//		recoveryPanel.add(recoveryLabel,gbc);
+		recoveryLabel.setForeground(Color.white);
+		gbc.ipady = 10;
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 5;
+		recoveryPanel.add(recoveryLabel,gbc);
 //		
 		enterPasscodeLbl = new JLabel("Enter Unique Passcode");
 		enterPasscodeLbl.setFont(new Font("Tahoma", Font.PLAIN, 15));
-//		gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(20,200,0,20);
-//		gbc.gridx = 1;
-//		gbc.gridy = 1;
-//		recoveryPanel.add(enterPasscodeLbl,gbc);
-//		
+		enterPasscodeLbl.setForeground(Color.white);
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(20,200,0,20);
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		recoveryPanel.add(enterPasscodeLbl,gbc);
+		
 		uniquePasscodeInput = new JTextField();
 		uniquePasscodeInput.setColumns(10);
-//		gbc.insets = new Insets(20,-150,0,100);
-//		gbc.ipadx = 300;
-//		gbc.ipady = 15;
-//		gbc.gridx = 2;
-//		gbc.gridy = 1;
-//		gbc.gridwidth = 3;
-//		recoveryPanel.add(uniquePasscodeInput,gbc);
-//		
-		cancelRecoveryBtn = new JButton("CANCEL");
-		recoverBtn = new JButton("RECOVER");
-//		
-//		gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(20,120,0,0);
-//		gbc.ipadx = 10;
-//		gbc.ipady = 10;
-//		gbc.weightx = 0.0;
-//		gbc.gridx = 3;
-//		gbc.gridy = 3;
-//		recoveryPanel.add(cancelRecoveryBtn,gbc);
-//		
-//		gbc.insets = new Insets(20,10,0,400);
-//		gbc.gridx = 4;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		recoveryPanel.add(recoverBtn,gbc);
+		gbc.insets = new Insets(20,-150,0,100);
+		gbc.ipadx = 300;
+		gbc.ipady = 15;
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		gbc.gridwidth = 3;
+		recoveryPanel.add(uniquePasscodeInput,gbc);
+		
+		cancelRecoveryBtn = new CustomButton("CANCEL", new Color(202,0,0),new Color(255,255,255),40,null);
+		cancelRecoveryBtn.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		
+		recoverBtn = new CustomButton("RECOVER", new Color(0,170,0),new Color(255,255,255),40,null);
+		recoverBtn.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(20,120,0,0);
+		gbc.ipadx = 10;
+		gbc.ipady = 10;
+		gbc.weightx = 0.0;
+		gbc.gridx = 3;
+		gbc.gridy = 3;
+		recoveryPanel.add(cancelRecoveryBtn,gbc);
+		
+		gbc.insets = new Insets(20,10,0,400);
+		gbc.gridx = 4;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		recoveryPanel.add(recoverBtn,gbc);
 		
 	}
 }
