@@ -1592,7 +1592,7 @@ public class Functions implements Runnable{
 								System.out.println("[CREATE_CONN] Client has connected to host successfully!");
 								Thread.sleep(1000);
 								
-								
+								pw.println("gnssInSesh");
 								runInputListener(br);
 								chkNetworkConnection();
 								chkDeviceConnection();
