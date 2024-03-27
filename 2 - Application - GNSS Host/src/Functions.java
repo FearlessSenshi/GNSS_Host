@@ -53,7 +53,7 @@ import javax.swing.filechooser.FileSystemView;
 
 // Last committed by: 
 // 		Name: SENSHI PC ;)
-//		DT  : 03-20-2024 0539
+//		DT  : 03-28-2024 0200
 
 public class Functions implements Runnable{
 	MainApp gui;
@@ -517,6 +517,7 @@ public class Functions implements Runnable{
 										Thread.sleep(2000);
 										
 										pw.println("gnssVerified" + hostPasscode);
+										pw.println("gnssInSesh");
 										clientVerified = true;
 										
 										runInputListener(br);
@@ -997,7 +998,7 @@ public class Functions implements Runnable{
 			gui.lsCardLayout.show(gui.lsContainer, "lockPanel");
 			gui.uniquePasscodeInput.setText("");
 			// gui.inputStatusLbl.setVisible(false);
-			gui.w.setVisible(true);
+			gui.w.setVisible(false);
 			//gui.w.setAlwaysOnTop(true); // ONLY SET TO "true" when app is done ;)
 			
 			// (Activate all security measures)
@@ -1025,6 +1026,9 @@ public class Functions implements Runnable{
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
+			// 6. Send result to client
+			pw.println("gnssLockSuccess");
 		}
 		else {
 			System.out.println("[LOCK PC] Device is already locked!");
@@ -1053,6 +1057,7 @@ public class Functions implements Runnable{
 				// When the user unlocks the PC while encrypt() is running.
 				System.out.println("[UNLOCK PC] Early Unlock has been detected!");
 				earlyUnlock = true; // this flag will activate decrypt() after the encrypt() process.
+				pw.println("gnssEarlyUnlock");
 			}
 			else {
 				decrypt();
@@ -1864,6 +1869,7 @@ public class Functions implements Runnable{
 							if(earlyUnlock) {
 								System.out.println("[ENC] Early unlock detected! Decrypting files!");
 								earlyUnlock = false;
+								pw.println("gnssUnlockSuccess");
 								decrypt();
 							}
 						}
@@ -1899,6 +1905,7 @@ public class Functions implements Runnable{
 							loadedFilepaths = new ArrayList<>();
 							
 							aesRunning = true;
+							pw.println("gnssDecNotify");
 							
 							while(fscan.hasNextLine()) {
 								loadedFilepaths.add(fscan.nextLine());
@@ -1913,8 +1920,10 @@ public class Functions implements Runnable{
 							}
 							
 							System.out.println("[DEC] Process done!");
+							pw.println("gnssUnlockSuccess");
 							
 							aesRunning = false;
+							
 							
 							if(displayFinishDialog) {
 								displayFinishDialog = false;
@@ -1930,7 +1939,10 @@ public class Functions implements Runnable{
 						}
 					}
 					else if(!new File("encFiles.txt").exists() && !new File("encKey.txt").exists()) {
+						
 						System.out.println("[DEC] There's nothing to decrypt!");
+						pw.println("gnssUnlockSuccess");
+						
 						if(displayFinishDialog) {
 							displayFinishDialog = false;
 							
@@ -1939,7 +1951,6 @@ public class Functions implements Runnable{
 							gui.dispose();
 							
 							JOptionPane.showMessageDialog(null, "Device recovered! You may use your device again.", "Recovery Mode", JOptionPane.INFORMATION_MESSAGE);
-							
 							System.exit(0);
 						}
 					}
